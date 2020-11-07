@@ -55,16 +55,37 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 };
 exports.__esModule = true;
 var HouseScrape_1 = require("./HouseScrape");
+function scrape() {
+    return __awaiter(this, void 0, void 0, function () {
+        var e_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 5]);
+                    return [4 /*yield*/, Promise.all([
+                            HouseScrape_1.GovResults(),
+                            HouseScrape_1.SenResults(),
+                            HouseScrape_1.PresResults(),
+                            HouseScrape_1.HouseResults()
+                        ])];
+                case 1: return [2 /*return*/, _a.sent()];
+                case 2:
+                    e_1 = _a.sent();
+                    return [4 /*yield*/, new Promise(function (res) { setTimeout(res, 1000); })];
+                case 3:
+                    _a.sent();
+                    return [4 /*yield*/, scrape()];
+                case 4: return [2 /*return*/, _a.sent()];
+                case 5: return [2 /*return*/];
+            }
+        });
+    });
+}
 (function () { return __awaiter(void 0, void 0, void 0, function () {
     var _a, gov, sen, pres, hou, ResultCountyMap, stateTotals, closeStates, DemRaceDiff, RepRaceDiff, minimumCount, demDbDiff, repDbDiff;
     return __generator(this, function (_b) {
         switch (_b.label) {
-            case 0: return [4 /*yield*/, Promise.all([
-                    HouseScrape_1.GovResults,
-                    HouseScrape_1.SenResults,
-                    HouseScrape_1.PresResults,
-                    HouseScrape_1.HouseResults
-                ])];
+            case 0: return [4 /*yield*/, scrape()];
             case 1:
                 _a = _b.sent(), gov = _a[0], sen = _a[1], pres = _a[2], hou = _a[3];
                 console.log(hou);
@@ -72,12 +93,12 @@ var HouseScrape_1 = require("./HouseScrape");
                     var _a, _b, _c, _d, _e, _f;
                     var votes = pres[county];
                     var _g = votes.sort(function (a, b) { return b[1] - a[1]; }), winning = _g[0], second = _g[1];
-                    var winHouResults = (_a = hou[county]) === null || _a === void 0 ? void 0 : _a.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return val[1] + acc; }, 0);
-                    var secondHouResults = (_b = hou[county]) === null || _b === void 0 ? void 0 : _b.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return val[1] + acc; }, 0);
-                    var winGovResults = (_c = gov[county]) === null || _c === void 0 ? void 0 : _c.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return val[1] + acc; }, 0);
-                    var secondGovResults = (_d = gov[county]) === null || _d === void 0 ? void 0 : _d.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return val[1] + acc; }, 0);
-                    var winSenResults = (_e = sen[county]) === null || _e === void 0 ? void 0 : _e.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return val[1] + acc; }, 0);
-                    var secondSenResults = (_f = sen[county]) === null || _f === void 0 ? void 0 : _f.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return val[1] + acc; }, 0);
+                    var winHouResults = (_a = hou[county]) === null || _a === void 0 ? void 0 : _a.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
+                    var secondHouResults = (_b = hou[county]) === null || _b === void 0 ? void 0 : _b.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
+                    var winGovResults = (_c = gov[county]) === null || _c === void 0 ? void 0 : _c.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
+                    var secondGovResults = (_d = gov[county]) === null || _d === void 0 ? void 0 : _d.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
+                    var winSenResults = (_e = sen[county]) === null || _e === void 0 ? void 0 : _e.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
+                    var secondSenResults = (_f = sen[county]) === null || _f === void 0 ? void 0 : _f.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
                     var wResult = {
                         pres: winning[1],
                         party: winning[0],
@@ -137,6 +158,7 @@ var HouseScrape_1 = require("./HouseScrape");
                 });
                 minimumCount = 175000;
                 demDbDiff = {};
+                repDbDiff = {};
                 console.log(__spreadArrays(DemRaceDiff.map(function (val) {
                     var state = val[0].split('-')[0];
                     var max = Math.max(val[1].gov || 0, val[1].sen || 0, val[1].hou || 0);
@@ -144,47 +166,57 @@ var HouseScrape_1 = require("./HouseScrape");
                     if (downBallotDiff > 0) {
                         demDbDiff[state] = (demDbDiff[state] || 0) + downBallotDiff;
                     }
-                    var presTotal = val[1].pres;
+                    var oppmax = Math.max(val[1].opp.gov || 0, val[1].opp.sen || 0, val[1].opp.hou || 0);
+                    var oppositionDownBallotDiff = (val[1].opp.pres - oppmax);
+                    if (oppositionDownBallotDiff > 0) {
+                        repDbDiff[state] = (repDbDiff[state] || 0) + oppositionDownBallotDiff;
+                    }
+                    var leadingPresidentVote = val[1].pres;
                     return {
                         state: state,
                         county: val[0].split('-')[1],
-                        presTotal: presTotal,
+                        leadingPresidentVote: leadingPresidentVote,
                         downBallotDiff: downBallotDiff,
+                        oppositionDownBallotDiff: oppositionDownBallotDiff,
                         data: val[1]
                     };
                 }).map(function (val) {
                     var state = val.state;
-                    if (val.downBallotDiff > 0 && demDbDiff[state]) {
-                        return __assign(__assign({}, val), { downBallotDiffTotalPct: val.downBallotDiff / demDbDiff[state] });
-                    }
-                    return __assign(__assign({}, val), { downBallotDiffTotalPct: 0 });
-                })).filter(function (val) { return val.presTotal > minimumCount; }).sort(function (a, b) {
-                    return (b.downBallotDiffTotalPct) - (a.downBallotDiffTotalPct);
-                }));
-                repDbDiff = {};
-                console.log(__spreadArrays(RepRaceDiff.map(function (val) {
+                    var downBallotPct = {
+                        main: val.downBallotDiff > 0 && demDbDiff[state] ? val.downBallotDiff : 0,
+                        opp: val.oppositionDownBallotDiff > 0 && repDbDiff[state] ? val.oppositionDownBallotDiff : 0
+                    };
+                    return __assign(__assign({}, val), { pctDeltaDownBallotDiff: (downBallotPct.main - downBallotPct.opp) / (demDbDiff[state] - repDbDiff[state]) * 100 });
+                }), RepRaceDiff.map(function (val) {
                     var state = val[0].split('-')[0];
                     var max = Math.max(val[1].gov || 0, val[1].sen || 0, val[1].hou || 0);
                     var downBallotDiff = (val[1].pres - max);
                     if (downBallotDiff > 0) {
                         repDbDiff[state] = (repDbDiff[state] || 0) + downBallotDiff;
                     }
-                    var presTotal = val[1].pres;
+                    var oppmax = Math.max(val[1].opp.gov || 0, val[1].opp.sen || 0, val[1].opp.hou || 0);
+                    var oppositionDownBallotDiff = (val[1].opp.pres - oppmax);
+                    if (oppositionDownBallotDiff > 0) {
+                        demDbDiff[state] = (demDbDiff[state] || 0) + oppositionDownBallotDiff;
+                    }
+                    var leadingPresidentVote = val[1].pres;
                     return {
                         state: state,
                         county: val[0].split('-')[1],
-                        presTotal: presTotal,
+                        leadingPresidentVote: leadingPresidentVote,
                         downBallotDiff: downBallotDiff,
+                        oppositionDownBallotDiff: oppositionDownBallotDiff,
                         data: val[1]
                     };
                 }).map(function (val) {
                     var state = val.state;
-                    if (val.downBallotDiff > 0 && repDbDiff[state]) {
-                        return __assign(__assign({}, val), { downBallotDiffTotalPct: val.downBallotDiff / repDbDiff[state] });
-                    }
-                    return __assign(__assign({}, val), { downBallotDiffTotalPct: 0 });
-                })).filter(function (val) { return val.presTotal > minimumCount; }).sort(function (a, b) {
-                    return (b.downBallotDiffTotalPct) - (a.downBallotDiffTotalPct);
+                    var downBallotPct = {
+                        main: val.downBallotDiff > 0 && repDbDiff[state] ? val.downBallotDiff : 0,
+                        opp: val.oppositionDownBallotDiff > 0 && demDbDiff[state] ? val.oppositionDownBallotDiff : 0
+                    };
+                    return __assign(__assign({}, val), { pctDeltaDownBallotDiff: (downBallotPct.opp - downBallotPct.main) / (demDbDiff[state] - repDbDiff[state]) * 100 });
+                })).filter(function (val) { return val.leadingPresidentVote > minimumCount; }).sort(function (a, b) {
+                    return (b.pctDeltaDownBallotDiff) - (a.pctDeltaDownBallotDiff);
                 }));
                 return [2 /*return*/];
         }

@@ -1,24 +1,31 @@
 import { GovResults, HouseResults, PresResults, SenResults } from './HouseScrape';
-
+async function scrape() {
+    try {
+        return await Promise.all([
+            GovResults(),
+            SenResults(),
+            PresResults(),
+            HouseResults()
+        ]);
+    } catch (e) {
+        await new Promise((res) => { setTimeout(res, 1000) });
+        return await scrape();
+    }
+}
 (async () => {
-    const [gov, sen, pres, hou] = await Promise.all([
-        GovResults,
-        SenResults,
-        PresResults,
-        HouseResults
-    ]);
+    const [gov, sen, pres, hou] = await scrape();
 
     console.log(hou);
 
     const ResultCountyMap = Object.keys(pres).reduce((counties, county) => {
         const votes = pres[county];
         const [winning, second] = votes.sort((a, b) => b[1] - a[1]);
-        const winHouResults = hou[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => val[1] + acc, 0);
-        const secondHouResults = hou[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => val[1] + acc, 0);
-        const winGovResults = gov[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => val[1] + acc, 0);
-        const secondGovResults = gov[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => val[1] + acc, 0);
-        const winSenResults = sen[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => val[1] + acc, 0);
-        const secondSenResults = sen[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => val[1] + acc, 0);
+        const winHouResults = hou[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
+        const secondHouResults = hou[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
+        const winGovResults = gov[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
+        const secondGovResults = gov[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
+        const winSenResults = sen[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
+        const secondSenResults = sen[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
         const wResult = {
             pres: winning[1],
             party: winning[0],
@@ -86,6 +93,7 @@ import { GovResults, HouseResults, PresResults, SenResults } from './HouseScrape
 
     const minimumCount = 175000;
     let demDbDiff: { [state: string]: number } = {};
+    let repDbDiff: { [state: string]: number } = {};
     console.log([
         ...DemRaceDiff.map((val) => {
             const state = (val[0] as string).split('-')[0];
@@ -94,27 +102,31 @@ import { GovResults, HouseResults, PresResults, SenResults } from './HouseScrape
             if (downBallotDiff > 0) {
                 demDbDiff[state] = (demDbDiff[state] || 0) + downBallotDiff;
             }
-            const presTotal = val[1].pres;
+            const oppmax = Math.max(val[1].opp.gov || 0, val[1].opp.sen || 0, val[1].opp.hou || 0);
+            const oppositionDownBallotDiff = (val[1].opp.pres - oppmax);
+            if (oppositionDownBallotDiff > 0) {
+                repDbDiff[state] = (repDbDiff[state] || 0) + oppositionDownBallotDiff;
+            }
+            const leadingPresidentVote = val[1].pres;
             return {
                 state,
                 county: (val[0] as string).split('-')[1],
-                presTotal,
+                leadingPresidentVote,
                 downBallotDiff,
+                oppositionDownBallotDiff,
                 data: val[1]
             };
         }).map((val) => {
             const { state } = val;
-            if (val.downBallotDiff > 0 && demDbDiff[state]) {
-                return { ...val, downBallotDiffTotalPct: val.downBallotDiff / demDbDiff[state] };
+            const downBallotPct = {
+                main: val.downBallotDiff > 0 && demDbDiff[state] ? val.downBallotDiff : 0,
+                opp: val.oppositionDownBallotDiff > 0 && repDbDiff[state] ? val.oppositionDownBallotDiff : 0,
+            };
+            return {
+                ...val,
+                pctDeltaDownBallotDiff: (downBallotPct.main - downBallotPct.opp) / (demDbDiff[state] - repDbDiff[state]) * 100,
             }
-            return { ...val, downBallotDiffTotalPct: 0 };
         }),
-    ].filter((val) => val.presTotal > minimumCount).sort((a, b) => {
-        return (b.downBallotDiffTotalPct) - (a.downBallotDiffTotalPct);
-    }));
-
-    let repDbDiff: { [state: string]: number } = {};
-    console.log([
         ...RepRaceDiff.map((val) => {
             const state = (val[0] as string).split('-')[0];
             const max = Math.max(val[1].gov || 0, val[1].sen || 0, val[1].hou || 0);
@@ -122,22 +134,32 @@ import { GovResults, HouseResults, PresResults, SenResults } from './HouseScrape
             if (downBallotDiff > 0) {
                 repDbDiff[state] = (repDbDiff[state] || 0) + downBallotDiff;
             }
-            const presTotal = val[1].pres;
+            const oppmax = Math.max(val[1].opp.gov || 0, val[1].opp.sen || 0, val[1].opp.hou || 0);
+            const oppositionDownBallotDiff = (val[1].opp.pres - oppmax);
+            if (oppositionDownBallotDiff > 0) {
+                demDbDiff[state] = (demDbDiff[state] || 0) + oppositionDownBallotDiff;
+            }
+            const leadingPresidentVote = val[1].pres;
             return {
                 state,
                 county: (val[0] as string).split('-')[1],
-                presTotal,
+                leadingPresidentVote,
                 downBallotDiff,
+                oppositionDownBallotDiff,
                 data: val[1]
             };
         }).map((val) => {
             const { state } = val;
-            if (val.downBallotDiff > 0 && repDbDiff[state]) {
-                return { ...val, downBallotDiffTotalPct: val.downBallotDiff / repDbDiff[state] };
+            const downBallotPct = {
+                main: val.downBallotDiff > 0 && repDbDiff[state] ? val.downBallotDiff : 0,
+                opp: val.oppositionDownBallotDiff > 0 && demDbDiff[state] ? val.oppositionDownBallotDiff : 0,
+            };
+            return {
+                ...val,
+                pctDeltaDownBallotDiff: (downBallotPct.opp - downBallotPct.main) / (demDbDiff[state] - repDbDiff[state]) * 100,
             }
-            return { ...val, downBallotDiffTotalPct: 0 };
-        }),
-    ].filter((val) => val.presTotal > minimumCount).sort((a, b) => {
-        return (b.downBallotDiffTotalPct) - (a.downBallotDiffTotalPct);
+        })
+    ].filter((val) => val.leadingPresidentVote > minimumCount).sort((a, b) => {
+        return (b.pctDeltaDownBallotDiff) - (a.pctDeltaDownBallotDiff);
     }));
 })().then(console.log);

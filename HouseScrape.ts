@@ -552,7 +552,10 @@ export const HouseResults = (async () => {
         const counties = root.querySelectorAll(".result-county-table-header").map((val) => val.innerText.replace(" County", ""));
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
-            root.querySelectorAll(".result-county-table-col-votes").map((val) => Number.parseInt(val.text.replace(',', "")))
+            root.querySelectorAll(".result-county-table-col-votes").map((val) => {
+                const vote = Number.parseInt(val.text.replace(',', ""));
+                return isNaN(vote) ? 0 : vote;
+            })
         );
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
@@ -564,7 +567,7 @@ export const HouseResults = (async () => {
     }, {} as {
         [county: string]: [string, number][]
     })
-})();
+});
 export const GovResults = (async () => {
     const split = "-governor-"
     const roots = await Promise.all(Urls.GovResults.map(async (url) => {
@@ -575,7 +578,10 @@ export const GovResults = (async () => {
         const counties = root.querySelectorAll(".result-county-table-header").map((val) => val.innerText.replace(" County", ""));
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
-            root.querySelectorAll(".result-county-table-col-votes").map((val) => Number.parseInt(val.text.replace(',', "")))
+            root.querySelectorAll(".result-county-table-col-votes").map((val) => {
+                const vote = Number.parseInt(val.text.replace(',', ""));
+                return isNaN(vote) ? 0 : vote;
+            })
         );
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
@@ -587,7 +593,7 @@ export const GovResults = (async () => {
     }, {} as {
         [county: string]: [string, number][]
     })
-})();
+});
 export const PresResults = (async () => {
     const split = "-presidential-"
     const roots = await Promise.all(Urls.PresResults.map(async (url) => {
@@ -598,7 +604,10 @@ export const PresResults = (async () => {
         const counties = root.querySelectorAll(".result-county-table-header").map((val) => val.innerText.replace(" County", ""));
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
-            root.querySelectorAll(".result-county-table-col-votes").map((val) => Number.parseInt(val.text.replace(',', "")))
+            root.querySelectorAll(".result-county-table-col-votes").map((val) => {
+                const vote = Number.parseInt(val.text.replace(',', ""));
+                return isNaN(vote) ? 0 : vote;
+            })
         );
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
@@ -610,7 +619,7 @@ export const PresResults = (async () => {
     }, {} as {
         [county: string]: [string, number][]
     })
-})();
+});
 export const SenResults = (async () => {
     const split = "-senate-"
     const roots = await Promise.all(Urls.SenResults.map(async (url) => {
@@ -621,7 +630,10 @@ export const SenResults = (async () => {
         const counties = root.querySelectorAll(".result-county-table-header").map((val) => val.innerText.replace(" County", ""));
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
-            root.querySelectorAll(".result-county-table-col-votes").map((val) => Number.parseInt(val.text.replace(',', "")))
+            root.querySelectorAll(".result-county-table-col-votes").map((val) => {
+                const vote = Number.parseInt(val.text.replace(',', ""));
+                return isNaN(vote) ? 0 : vote;
+            })
         );
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
@@ -633,4 +645,4 @@ export const SenResults = (async () => {
     }, {} as {
         [county: string]: [string, number][]
     })
-})();
+});
