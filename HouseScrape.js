@@ -577,24 +577,30 @@ var Urls = {
 };
 function readOrFetch(url, folder, split) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, text;
+        var _a, res, text;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 2, , 6]);
+                    _b.trys.push([0, 2, , 7]);
                     return [4 /*yield*/, promises_1.readFile(folder + "/" + url.split(split)[1].slice(0, -1), { encoding: "utf-8" })];
                 case 1: return [2 /*return*/, _b.sent()];
                 case 2:
                     _a = _b.sent();
                     return [4 /*yield*/, node_fetch_1["default"](url)];
-                case 3: return [4 /*yield*/, (_b.sent()).text()];
-                case 4:
+                case 3:
+                    res = _b.sent();
+                    if (!res.ok) { // res.status >= 200 && res.status < 300
+                        throw res.statusText;
+                    }
+                    return [4 /*yield*/, node_fetch_1["default"](url)];
+                case 4: return [4 /*yield*/, (_b.sent()).text()];
+                case 5:
                     text = _b.sent();
                     return [4 /*yield*/, promises_1.writeFile(folder + "/" + url.split(split)[1].slice(0, -1), text, "utf-8")];
-                case 5:
+                case 6:
                     _b.sent();
                     return [2 /*return*/, text];
-                case 6: return [2 /*return*/];
+                case 7: return [2 /*return*/];
             }
         });
     });
@@ -623,7 +629,11 @@ exports.HouseResults = (function () { return __awaiter(void 0, void 0, void 0, f
                 return [2 /*return*/, roots.reduce(function (results, _a) {
                         var root = _a.root, url = _a.url;
                         var state = url.split(split).slice(-1)[0].slice(0, 2);
-                        var counties = root.querySelectorAll(".result-county-table-header").map(function (val) { return val.innerText.replace(" County", ""); });
+                        var counties = root.querySelectorAll(".result-county-table-header").map(function (val) {
+                            return ["County", "Parish", "Borough", "Census Area", "Municipality"].reduce(function (acc, text) {
+                                return acc.replace(" " + text, "");
+                            }, val.innerText);
+                        });
                         var countyVotes = lodash_1.zip(root.querySelectorAll(".result-county-table-col-candidate").map(function (val) { return val.text.split(" ").filter(function (val) { return val !== '*'; }).slice(-1)[0]; }), root.querySelectorAll(".result-county-table-col-votes").map(function (val) {
                             var vote = Number.parseInt(val.text.replace(',', ""));
                             return isNaN(vote) ? 0 : vote;
@@ -631,6 +641,7 @@ exports.HouseResults = (function () { return __awaiter(void 0, void 0, void 0, f
                         return __spreadArrays(counties).reduce(function (acc, county) {
                             var restVotes = countyVotes.slice(1);
                             var votes = lodash_1.takeWhile(restVotes, function (val) { return val[0] !== "Candidate"; });
+                            county = county.replace(/\W/g, "").toLowerCase();
                             acc[state + "-" + county] = (acc[state + "-" + county] || []).concat(votes);
                             countyVotes = restVotes.slice(votes.length);
                             return acc;
@@ -663,7 +674,11 @@ exports.GovResults = (function () { return __awaiter(void 0, void 0, void 0, fun
                 return [2 /*return*/, roots.reduce(function (results, _a) {
                         var root = _a.root, url = _a.url;
                         var state = url.split(split).slice(-1)[0].slice(0, 2);
-                        var counties = root.querySelectorAll(".result-county-table-header").map(function (val) { return val.innerText.replace(" County", ""); });
+                        var counties = root.querySelectorAll(".result-county-table-header").map(function (val) {
+                            return ["County", "Parish", "Borough", "Census Area", "Municipality"].reduce(function (acc, text) {
+                                return acc.replace(" " + text, "");
+                            }, val.innerText);
+                        });
                         var countyVotes = lodash_1.zip(root.querySelectorAll(".result-county-table-col-candidate").map(function (val) { return val.text.split(" ").filter(function (val) { return val !== '*'; }).slice(-1)[0]; }), root.querySelectorAll(".result-county-table-col-votes").map(function (val) {
                             var vote = Number.parseInt(val.text.replace(',', ""));
                             return isNaN(vote) ? 0 : vote;
@@ -671,6 +686,7 @@ exports.GovResults = (function () { return __awaiter(void 0, void 0, void 0, fun
                         return __spreadArrays(counties).reduce(function (acc, county) {
                             var restVotes = countyVotes.slice(1);
                             var votes = lodash_1.takeWhile(restVotes, function (val) { return val[0] !== "Candidate"; });
+                            county = county.replace(/\W/g, "").toLowerCase();
                             acc[state + "-" + county] = (acc[state + "-" + county] || []).concat(votes);
                             countyVotes = restVotes.slice(votes.length);
                             return acc;
@@ -703,7 +719,11 @@ exports.PresResults = (function () { return __awaiter(void 0, void 0, void 0, fu
                 return [2 /*return*/, roots.reduce(function (results, _a) {
                         var root = _a.root, url = _a.url;
                         var state = url.split(split).slice(-1)[0].slice(0, 2);
-                        var counties = root.querySelectorAll(".result-county-table-header").map(function (val) { return val.innerText.replace(" County", ""); });
+                        var counties = root.querySelectorAll(".result-county-table-header").map(function (val) {
+                            return ["County", "Parish", "Borough", "Census Area", "Municipality"].reduce(function (acc, text) {
+                                return acc.replace(" " + text, "");
+                            }, val.innerText);
+                        });
                         var countyVotes = lodash_1.zip(root.querySelectorAll(".result-county-table-col-candidate").map(function (val) { return val.text.split(" ").filter(function (val) { return val !== '*'; }).slice(-1)[0]; }), root.querySelectorAll(".result-county-table-col-votes").map(function (val) {
                             var vote = Number.parseInt(val.text.replace(',', ""));
                             return isNaN(vote) ? 0 : vote;
@@ -711,6 +731,7 @@ exports.PresResults = (function () { return __awaiter(void 0, void 0, void 0, fu
                         return __spreadArrays(counties).reduce(function (acc, county) {
                             var restVotes = countyVotes.slice(1);
                             var votes = lodash_1.takeWhile(restVotes, function (val) { return val[0] !== "Candidate"; });
+                            county = county.replace(/\W/g, "").toLowerCase();
                             acc[state + "-" + county] = (acc[state + "-" + county] || []).concat(votes);
                             countyVotes = restVotes.slice(votes.length);
                             return acc;
@@ -743,7 +764,11 @@ exports.SenResults = (function () { return __awaiter(void 0, void 0, void 0, fun
                 return [2 /*return*/, roots.reduce(function (results, _a) {
                         var root = _a.root, url = _a.url;
                         var state = url.split(split).slice(-1)[0].slice(0, 2);
-                        var counties = root.querySelectorAll(".result-county-table-header").map(function (val) { return val.innerText.replace(" County", ""); });
+                        var counties = root.querySelectorAll(".result-county-table-header").map(function (val) {
+                            return ["County", "Parish", "Borough", "Census Area", "Municipality"].reduce(function (acc, text) {
+                                return acc.replace(" " + text, "");
+                            }, val.innerText);
+                        });
                         var countyVotes = lodash_1.zip(root.querySelectorAll(".result-county-table-col-candidate").map(function (val) { return val.text.split(" ").filter(function (val) { return val !== '*'; }).slice(-1)[0]; }), root.querySelectorAll(".result-county-table-col-votes").map(function (val) {
                             var vote = Number.parseInt(val.text.replace(',', ""));
                             return isNaN(vote) ? 0 : vote;
@@ -751,6 +776,7 @@ exports.SenResults = (function () { return __awaiter(void 0, void 0, void 0, fun
                         return __spreadArrays(counties).reduce(function (acc, county) {
                             var restVotes = countyVotes.slice(1);
                             var votes = lodash_1.takeWhile(restVotes, function (val) { return val[0] !== "Candidate"; });
+                            county = county.replace(/\W/g, "").toLowerCase();
                             acc[state + "-" + county] = (acc[state + "-" + county] || []).concat(votes);
                             countyVotes = restVotes.slice(votes.length);
                             return acc;

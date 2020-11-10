@@ -54,7 +54,9 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 exports.__esModule = true;
+var ECMap_1 = require("./ECMap");
 var HouseScrape_1 = require("./HouseScrape");
+var PopulationMap_1 = require("./PopulationMap");
 function scrape() {
     return __awaiter(this, void 0, void 0, function () {
         var e_1;
@@ -82,7 +84,7 @@ function scrape() {
     });
 }
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, gov, sen, pres, hou, ResultCountyMap, stateTotals, closeStates, DemRaceDiff, RepRaceDiff, minimumCount, demDbDiff, repDbDiff;
+    var _a, gov, sen, pres, hou, ResultCountyMap, stateTotals, results, closeStates, DemRaceDiff, RepRaceDiff, minimumCount, demDbDiff, repDbDiff;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0: return [4 /*yield*/, scrape()];
@@ -123,11 +125,41 @@ function scrape() {
                 }, {});
                 stateTotals = Object.keys(ResultCountyMap).reduce(function (prev, key) {
                     var state = key.split('-')[0];
-                    prev[state] = prev[state] || { rep: 0, dem: 0 };
-                    prev[state].dem += ResultCountyMap[key].Dem.pres;
-                    prev[state].rep += ResultCountyMap[key].Rep.pres;
+                    var countyPopulation = PopulationMap_1.populationMap[key];
+                    prev[state] = prev[state] || { rep: 0, dem: 0, weightedRep: 0, weightedDem: 0, EC: ECMap_1.StateECMap[state], population: 0 };
+                    var DemPresVote = ResultCountyMap[key].Dem.pres;
+                    var RepPresVote = ResultCountyMap[key].Rep.pres;
+                    if (!DemPresVote && !RepPresVote) {
+                        DemPresVote = 1;
+                        RepPresVote = 1;
+                    }
+                    prev[state].dem += DemPresVote;
+                    prev[state].rep += RepPresVote;
+                    prev[state].weightedDem += countyPopulation * (DemPresVote / (DemPresVote + RepPresVote));
+                    prev[state].weightedRep += countyPopulation * (RepPresVote / (DemPresVote + RepPresVote));
+                    prev[state].population += countyPopulation;
                     return prev;
                 }, {});
+                results = Object.keys(stateTotals).reduce(function (acc, key) {
+                    if (stateTotals[key].weightedRep < stateTotals[key].weightedDem) {
+                        acc.demEC += stateTotals[key].EC;
+                        var margin = stateTotals[key].weightedDem - stateTotals[key].weightedRep;
+                        var pctMargin = margin / stateTotals[key].population;
+                        acc.demStates.push({ key: key, margin: margin, pctMargin: pctMargin });
+                    }
+                    if (stateTotals[key].weightedRep > stateTotals[key].weightedDem) {
+                        acc.repEC += stateTotals[key].EC;
+                        var margin = stateTotals[key].weightedRep - stateTotals[key].weightedDem;
+                        var pctMargin = margin / stateTotals[key].population;
+                        acc.repStates.push({ key: key, margin: margin, pctMargin: pctMargin });
+                    }
+                    acc.repWeightedTotal += stateTotals[key].weightedRep || 0;
+                    acc.demWeightedTotal += stateTotals[key].weightedDem || 0;
+                    return acc;
+                }, { demEC: 0, repEC: 0, repStates: [], repWeightedTotal: 0, demStates: [], demWeightedTotal: 0 });
+                results.repStates = results.repStates.sort(function (a, b) { return a.pctMargin - b.pctMargin; });
+                results.demStates = results.demStates.sort(function (a, b) { return a.pctMargin - b.pctMargin; });
+                console.log(results);
                 closeStates = Object.keys(stateTotals).map(function (key) {
                     var max = Math.max(stateTotals[key].dem, stateTotals[key].rep);
                     var min = Math.min(stateTotals[key].dem, stateTotals[key].rep);

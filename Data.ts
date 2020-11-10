@@ -1,4 +1,6 @@
+import { StateECMap } from './ECMap';
 import { GovResults, HouseResults, PresResults, SenResults } from './HouseScrape';
+import { populationMap } from './PopulationMap';
 async function scrape() {
     try {
         return await Promise.all([
@@ -55,11 +57,45 @@ async function scrape() {
     });
     const stateTotals = Object.keys(ResultCountyMap).reduce((prev, key) => {
         const state = key.split('-')[0];
-        prev[state] = prev[state] || { rep: 0, dem: 0 };
-        prev[state].dem += ResultCountyMap[key].Dem.pres;
-        prev[state].rep += ResultCountyMap[key].Rep.pres;
+        const countyPopulation = populationMap[key];
+        prev[state] = prev[state] || { rep: 0, dem: 0, weightedRep: 0, weightedDem: 0, EC: StateECMap[state], population: 0 };
+        let DemPresVote = ResultCountyMap[key].Dem.pres;
+        let RepPresVote = ResultCountyMap[key].Rep.pres;
+        if (!DemPresVote && !RepPresVote) {
+            DemPresVote = 1;
+            RepPresVote = 1;
+        }
+        prev[state].dem += DemPresVote;
+        prev[state].rep += RepPresVote;
+        prev[state].weightedDem += countyPopulation * (DemPresVote / (DemPresVote + RepPresVote));
+        prev[state].weightedRep += countyPopulation * (RepPresVote / (DemPresVote + RepPresVote));
+        prev[state].population += countyPopulation;
         return prev;
-    }, {} as { [state: string]: { rep: number, dem: number } })
+    }, {} as { [state: string]: { rep: number, dem: number, weightedRep: number, weightedDem: number, EC: number, population: number } });
+
+    const results = Object.keys(stateTotals).reduce((acc, key) => {
+        if (stateTotals[key].weightedRep < stateTotals[key].weightedDem) {
+            acc.demEC += stateTotals[key].EC;
+            const margin = stateTotals[key].weightedDem - stateTotals[key].weightedRep;
+            const pctMargin = margin/stateTotals[key].population;
+            acc.demStates.push({ key, margin, pctMargin});
+        }
+        if (stateTotals[key].weightedRep > stateTotals[key].weightedDem) {
+            acc.repEC += stateTotals[key].EC;
+            const margin = stateTotals[key].weightedRep - stateTotals[key].weightedDem;
+            const pctMargin = margin/stateTotals[key].population;
+            acc.repStates.push({ key, margin, pctMargin});
+        }
+        acc.repWeightedTotal += stateTotals[key].weightedRep || 0
+        acc.demWeightedTotal += stateTotals[key].weightedDem || 0
+        return acc;
+    }, { demEC: 0, repEC: 0, repStates: [] as { key: string, margin: number, pctMargin: number}[], repWeightedTotal: 0, demStates: [] as { key: string, margin: number, pctMargin: number}[], demWeightedTotal: 0 });
+
+    results.repStates = results.repStates.sort((a, b) => a.pctMargin - b.pctMargin);
+    results.demStates = results.demStates.sort((a, b) => a.pctMargin - b.pctMargin);
+
+    console.log(results);
+
     const closeStates = Object.keys(stateTotals).map((key) => {
         const max = Math.max(stateTotals[key].dem, stateTotals[key].rep);
         const min = Math.min(stateTotals[key].dem, stateTotals[key].rep);

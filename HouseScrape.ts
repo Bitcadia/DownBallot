@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import { readFile, writeFile } from 'fs/promises';
 import { parse } from "node-html-parser";
-import { zip, takeWhile, zipObject } from "lodash";
+import { zip, takeWhile } from "lodash";
 
 const Urls = {
     HouseResults: [
@@ -537,6 +537,10 @@ async function readOrFetch(url: string, folder: string, split: string) {
             -1)}`, { encoding: "utf-8" });
     }
     catch {
+        const res = await fetch(url);
+        if (!res.ok) { // res.status >= 200 && res.status < 300
+            throw res.statusText;
+        } 
         const text = await (await fetch(url)).text();
         await writeFile(`${folder}/${url.split(split)[1].slice(0, -1)}`, text, "utf-8");
         return text;
@@ -549,7 +553,12 @@ export const HouseResults = (async () => {
     }));
     return roots.reduce((results, { root, url }) => {
         const state = url.split(split).slice(-1)[0].slice(0, 2);
-        const counties = root.querySelectorAll(".result-county-table-header").map((val) => val.innerText.replace(" County", ""));
+        const counties = root.querySelectorAll(".result-county-table-header").map((val) =>
+            ["County", "Parish", "Borough", "Census Area", "Municipality"].reduce((acc, text) =>
+                acc.replace(` ${text}`, ""),
+                val.innerText
+            )
+        );
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
@@ -560,6 +569,7 @@ export const HouseResults = (async () => {
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
             const votes = takeWhile(restVotes, (val) => val[0] !== "Candidate");
+            county = county.replace(/\W/g,"").toLowerCase();
             acc[`${state}-${county}`] = (acc[`${state}-${county}`] || []).concat(votes);
             countyVotes = restVotes.slice(votes.length);
             return acc;
@@ -575,7 +585,12 @@ export const GovResults = (async () => {
     }));
     return roots.reduce((results, { root, url }) => {
         const state = url.split(split).slice(-1)[0].slice(0, 2);
-        const counties = root.querySelectorAll(".result-county-table-header").map((val) => val.innerText.replace(" County", ""));
+        const counties = root.querySelectorAll(".result-county-table-header").map((val) =>
+            ["County", "Parish", "Borough", "Census Area", "Municipality"].reduce((acc, text) =>
+                acc.replace(` ${text}`, ""),
+                val.innerText
+            )
+        );
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
@@ -586,6 +601,7 @@ export const GovResults = (async () => {
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
             const votes = takeWhile(restVotes, (val) => val[0] !== "Candidate");
+            county = county.replace(/\W/g,"").toLowerCase();
             acc[`${state}-${county}`] = (acc[`${state}-${county}`] || []).concat(votes);
             countyVotes = restVotes.slice(votes.length);
             return acc;
@@ -601,7 +617,12 @@ export const PresResults = (async () => {
     }));
     return roots.reduce((results, { root, url }) => {
         const state = url.split(split).slice(-1)[0].slice(0, 2);
-        const counties = root.querySelectorAll(".result-county-table-header").map((val) => val.innerText.replace(" County", ""));
+        const counties = root.querySelectorAll(".result-county-table-header").map((val) =>
+            ["County", "Parish", "Borough", "Census Area", "Municipality"].reduce((acc, text) =>
+                acc.replace(` ${text}`, ""),
+                val.innerText
+            )
+        );
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
@@ -612,6 +633,7 @@ export const PresResults = (async () => {
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
             const votes = takeWhile(restVotes, (val) => val[0] !== "Candidate");
+            county = county.replace(/\W/g,"").toLowerCase();
             acc[`${state}-${county}`] = (acc[`${state}-${county}`] || []).concat(votes);
             countyVotes = restVotes.slice(votes.length);
             return acc;
@@ -627,7 +649,12 @@ export const SenResults = (async () => {
     }));
     return roots.reduce((results, { root, url }) => {
         const state = url.split(split).slice(-1)[0].slice(0, 2);
-        const counties = root.querySelectorAll(".result-county-table-header").map((val) => val.innerText.replace(" County", ""));
+        const counties = root.querySelectorAll(".result-county-table-header").map((val) =>
+            ["County", "Parish", "Borough", "Census Area", "Municipality"].reduce((acc, text) =>
+                acc.replace(` ${text}`, ""),
+                val.innerText
+            )
+        );
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
@@ -638,6 +665,7 @@ export const SenResults = (async () => {
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
             const votes = takeWhile(restVotes, (val) => val[0] !== "Candidate");
+            county = county.replace(/\W/g,"").toLowerCase();
             acc[`${state}-${county}`] = (acc[`${state}-${county}`] || []).concat(votes);
             countyVotes = restVotes.slice(votes.length);
             return acc;
