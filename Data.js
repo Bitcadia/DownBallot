@@ -192,7 +192,7 @@ function scrape() {
                     return closeStates[state] && stateTotals[state].dem < stateTotals[state].rep;
                 });
                 DownBallotDiffsByStraight = RepublicanRaces.reduce(function (acc, val) {
-                    var state = val[0].split('-')[0];
+                    var _a = val[0].split('-'), state = _a[0], county = _a[1];
                     var result = val[1];
                     var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity);
                     var nonStraight = result.pres - straight;
@@ -204,7 +204,7 @@ function scrape() {
                     if ([(straightPct), (nonStraightPct - straightPct)].includes(NaN)) {
                         return acc;
                     }
-                    acc[state].push([(straightPct), (nonStraightPct - straightPct)]);
+                    acc[state].push([(straightPct), (nonStraightPct - straightPct), county]);
                     return acc;
                 }, {});
                 Object.keys(DownBallotDiffsByStraight).forEach(function (key) { return DownBallotDiffsByStraight[key] = DownBallotDiffsByStraight[key].sort(function (a, b) { return a[0] - b[0]; }).filter(function (val) { return Math.abs(val[1]) < 100; }); });

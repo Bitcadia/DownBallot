@@ -36,12 +36,12 @@
                     zoomType: 'xy'
                 },
                 title: {
-                    text: `Diff between Straight and individual: ${state}`
+                    text: `State: ${state}`
                 },
                 xAxis: {
                     title: {
                         enabled: true,
-                        text: '% of Straight votes for Republicans'
+                        text: '% of Republican Party Line Voters'
                     },
                     startOnTick: true,
                     endOnTick: true,
@@ -49,8 +49,10 @@
                 },
                 yAxis: {
                     title: {
-                        text: '% difference between straight and individual'
-                    }
+                        text: '% Delta of Non-Party Line Voters for Trump'
+                    },
+                    max: 100,
+                    min: -100
                 },
                 legend: {
                     layout: 'vertical',
@@ -81,12 +83,16 @@
                             }
                         },
                         tooltip: {
-                            headerFormat: '<b>{series.name}</b><br>',
-                            pointFormat: '{point.x} % Straight Rep, {point.y} % Individual Pres'
+                            pointFormater: function() {
+                                debugger;
+                                console.log(this);
+                                return `${point.x} % Straight Rep, ${point.y} % Individual Pres`
+                            }
                         }
                     }
                 },
                 series: [{
+                    name: state,
                     color: 'rgba(223, 83, 83, .5)',
                     data: data[state]
                 }]

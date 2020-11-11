@@ -130,7 +130,7 @@ async function scrape() {
     });
 
     const DownBallotDiffsByStraight = RepublicanRaces.reduce((acc, val) => {
-        const state = (val[0] as string).split('-')[0];
+        const [state, county] = (val[0] as string).split('-');
         const result = val[1];
         const straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity);
         const nonStraight = result.pres - straight;
@@ -142,9 +142,9 @@ async function scrape() {
         if ([(straightPct), (nonStraightPct - straightPct)].includes(NaN)) {
             return acc;
         }
-        acc[state].push([(straightPct), (nonStraightPct - straightPct)]);
+        acc[state].push([(straightPct), (nonStraightPct - straightPct), county]);
         return acc;
-    }, {} as { [state: string]: [number, number][] });
+    }, {} as { [state: string]: [number, number, string][] });
     Object.keys(DownBallotDiffsByStraight).forEach((key) => DownBallotDiffsByStraight[key] =DownBallotDiffsByStraight[key].sort((a, b) => a[0] - b[0]).filter((val)=>Math.abs(val[1]) < 100));
     console.log(DownBallotDiffsByStraight);
     writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify(DownBallotDiffsByStraight), "utf-8");
