@@ -57,6 +57,7 @@ exports.__esModule = true;
 var ECMap_1 = require("./ECMap");
 var HouseScrape_1 = require("./HouseScrape");
 var PopulationMap_1 = require("./PopulationMap");
+var promises_1 = require("fs/promises");
 function scrape() {
     return __awaiter(this, void 0, void 0, function () {
         var e_1;
@@ -84,13 +85,12 @@ function scrape() {
     });
 }
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, gov, sen, pres, hou, ResultCountyMap, stateTotals, results, closeStates, DemRaceDiff, RepRaceDiff, minimumCount, demDbDiff, repDbDiff;
+    var _a, gov, sen, pres, hou, ResultCountyMap, stateTotals, ECAndPopularResultsWeightedByCounty, closeStates, DemocratRaces, DemRaceDiff, RepublicanRaces, RepRaceDiff, DownBallotDiffsByStraight, minimumCount, demDbDiff, repDbDiff, largestNoDownBallotCounties;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0: return [4 /*yield*/, scrape()];
             case 1:
                 _a = _b.sent(), gov = _a[0], sen = _a[1], pres = _a[2], hou = _a[3];
-                console.log(hou);
                 ResultCountyMap = Object.keys(pres).reduce(function (counties, county) {
                     var _a, _b, _c, _d, _e, _f;
                     var votes = pres[county];
@@ -140,7 +140,7 @@ function scrape() {
                     prev[state].population += countyPopulation;
                     return prev;
                 }, {});
-                results = Object.keys(stateTotals).reduce(function (acc, key) {
+                ECAndPopularResultsWeightedByCounty = Object.keys(stateTotals).reduce(function (acc, key) {
                     if (stateTotals[key].weightedRep < stateTotals[key].weightedDem) {
                         acc.demEC += stateTotals[key].EC;
                         var margin = stateTotals[key].weightedDem - stateTotals[key].weightedRep;
@@ -157,9 +157,10 @@ function scrape() {
                     acc.demWeightedTotal += stateTotals[key].weightedDem || 0;
                     return acc;
                 }, { demEC: 0, repEC: 0, repStates: [], repWeightedTotal: 0, demStates: [], demWeightedTotal: 0 });
-                results.repStates = results.repStates.sort(function (a, b) { return a.pctMargin - b.pctMargin; });
-                results.demStates = results.demStates.sort(function (a, b) { return a.pctMargin - b.pctMargin; });
-                console.log(results);
+                ECAndPopularResultsWeightedByCounty.repStates = ECAndPopularResultsWeightedByCounty.repStates.sort(function (a, b) { return a.pctMargin - b.pctMargin; });
+                ECAndPopularResultsWeightedByCounty.demStates = ECAndPopularResultsWeightedByCounty.demStates.sort(function (a, b) { return a.pctMargin - b.pctMargin; });
+                console.log(ECAndPopularResultsWeightedByCounty);
+                promises_1.writeFile("./Outputs/CountyWeightedResults.json", JSON.stringify(ECAndPopularResultsWeightedByCounty), "utf-8");
                 closeStates = Object.keys(stateTotals).map(function (key) {
                     var max = Math.max(stateTotals[key].dem, stateTotals[key].rep);
                     var min = Math.min(stateTotals[key].dem, stateTotals[key].rep);
@@ -174,24 +175,45 @@ function scrape() {
                     acc[val.state] = val;
                     return acc;
                 }, {});
-                DemRaceDiff = Object.keys(ResultCountyMap).reduce(function (prev, current) {
+                DemocratRaces = Object.keys(ResultCountyMap).reduce(function (prev, current) {
                     prev.push([current, __assign(__assign({}, ResultCountyMap[current].Dem), { opp: ResultCountyMap[current].Rep })]);
                     return prev;
-                }, []).filter(function (val) {
+                }, []);
+                DemRaceDiff = DemocratRaces.filter(function (val) {
                     var state = val[0].split('-')[0];
                     return closeStates[state] && stateTotals[state].dem > stateTotals[state].rep;
                 });
-                RepRaceDiff = Object.keys(ResultCountyMap).reduce(function (prev, current) {
+                RepublicanRaces = Object.keys(ResultCountyMap).reduce(function (prev, current) {
                     prev.push([current, __assign(__assign({}, ResultCountyMap[current].Rep), { opp: ResultCountyMap[current].Dem })]);
                     return prev;
-                }, []).filter(function (val) {
+                }, []);
+                RepRaceDiff = RepublicanRaces.filter(function (val) {
                     var state = val[0].split('-')[0];
                     return closeStates[state] && stateTotals[state].dem < stateTotals[state].rep;
                 });
+                DownBallotDiffsByStraight = RepublicanRaces.reduce(function (acc, val) {
+                    var state = val[0].split('-')[0];
+                    var result = val[1];
+                    var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity);
+                    var nonStraight = result.pres - straight;
+                    var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity);
+                    var oppNonStraight = val[1].opp.pres - oppStraight;
+                    var straightPct = straight / (straight + oppStraight) * 100;
+                    var nonStraightPct = nonStraight / (nonStraight + oppNonStraight) * 100;
+                    acc[state] = acc[state] || [];
+                    if ([(straightPct), (nonStraightPct - straightPct)].includes(NaN)) {
+                        return acc;
+                    }
+                    acc[state].push([(straightPct), (nonStraightPct - straightPct)]);
+                    return acc;
+                }, {});
+                Object.keys(DownBallotDiffsByStraight).forEach(function (key) { return DownBallotDiffsByStraight[key] = DownBallotDiffsByStraight[key].sort(function (a, b) { return a[0] - b[0]; }).filter(function (val) { return Math.abs(val[1]) < 100; }); });
+                console.log(DownBallotDiffsByStraight);
+                promises_1.writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify(DownBallotDiffsByStraight), "utf-8");
                 minimumCount = 175000;
                 demDbDiff = {};
                 repDbDiff = {};
-                console.log(__spreadArrays(DemRaceDiff.map(function (val) {
+                largestNoDownBallotCounties = (__spreadArrays(DemRaceDiff.map(function (val) {
                     var state = val[0].split('-')[0];
                     var max = Math.max(val[1].gov || 0, val[1].sen || 0, val[1].hou || 0);
                     var downBallotDiff = (val[1].pres - max);
@@ -250,7 +272,8 @@ function scrape() {
                 })).filter(function (val) { return val.leadingPresidentVote > minimumCount; }).sort(function (a, b) {
                     return (b.pctDeltaDownBallotDiff) - (a.pctDeltaDownBallotDiff);
                 }));
+                promises_1.writeFile("./Outputs/LargestNoDownBallotCounties.json", JSON.stringify(largestNoDownBallotCounties), "utf-8");
                 return [2 /*return*/];
         }
     });
-}); })().then(console.log);
+}); })().then();

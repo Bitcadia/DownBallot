@@ -1,6 +1,7 @@
 import { StateECMap } from './ECMap';
 import { GovResults, HouseResults, PresResults, SenResults } from './HouseScrape';
 import { populationMap } from './PopulationMap';
+import { readFile, writeFile } from 'fs/promises';
 async function scrape() {
     try {
         return await Promise.all([
@@ -16,9 +17,6 @@ async function scrape() {
 }
 (async () => {
     const [gov, sen, pres, hou] = await scrape();
-
-    console.log(hou);
-
     const ResultCountyMap = Object.keys(pres).reduce((counties, county) => {
         const votes = pres[county];
         const [winning, second] = votes.sort((a, b) => b[1] - a[1]);
@@ -73,28 +71,29 @@ async function scrape() {
         return prev;
     }, {} as { [state: string]: { rep: number, dem: number, weightedRep: number, weightedDem: number, EC: number, population: number } });
 
-    const results = Object.keys(stateTotals).reduce((acc, key) => {
+    const ECAndPopularResultsWeightedByCounty = Object.keys(stateTotals).reduce((acc, key) => {
         if (stateTotals[key].weightedRep < stateTotals[key].weightedDem) {
             acc.demEC += stateTotals[key].EC;
             const margin = stateTotals[key].weightedDem - stateTotals[key].weightedRep;
-            const pctMargin = margin/stateTotals[key].population;
-            acc.demStates.push({ key, margin, pctMargin});
+            const pctMargin = margin / stateTotals[key].population;
+            acc.demStates.push({ key, margin, pctMargin });
         }
         if (stateTotals[key].weightedRep > stateTotals[key].weightedDem) {
             acc.repEC += stateTotals[key].EC;
             const margin = stateTotals[key].weightedRep - stateTotals[key].weightedDem;
-            const pctMargin = margin/stateTotals[key].population;
-            acc.repStates.push({ key, margin, pctMargin});
+            const pctMargin = margin / stateTotals[key].population;
+            acc.repStates.push({ key, margin, pctMargin });
         }
         acc.repWeightedTotal += stateTotals[key].weightedRep || 0
         acc.demWeightedTotal += stateTotals[key].weightedDem || 0
         return acc;
-    }, { demEC: 0, repEC: 0, repStates: [] as { key: string, margin: number, pctMargin: number}[], repWeightedTotal: 0, demStates: [] as { key: string, margin: number, pctMargin: number}[], demWeightedTotal: 0 });
+    }, { demEC: 0, repEC: 0, repStates: [] as { key: string, margin: number, pctMargin: number }[], repWeightedTotal: 0, demStates: [] as { key: string, margin: number, pctMargin: number }[], demWeightedTotal: 0 });
 
-    results.repStates = results.repStates.sort((a, b) => a.pctMargin - b.pctMargin);
-    results.demStates = results.demStates.sort((a, b) => a.pctMargin - b.pctMargin);
+    ECAndPopularResultsWeightedByCounty.repStates = ECAndPopularResultsWeightedByCounty.repStates.sort((a, b) => a.pctMargin - b.pctMargin);
+    ECAndPopularResultsWeightedByCounty.demStates = ECAndPopularResultsWeightedByCounty.demStates.sort((a, b) => a.pctMargin - b.pctMargin);
 
-    console.log(results);
+    console.log(ECAndPopularResultsWeightedByCounty);
+    writeFile("./Outputs/CountyWeightedResults.json", JSON.stringify(ECAndPopularResultsWeightedByCounty), "utf-8");
 
     const closeStates = Object.keys(stateTotals).map((key) => {
         const max = Math.max(stateTotals[key].dem, stateTotals[key].rep);
@@ -111,26 +110,49 @@ async function scrape() {
         return acc;
     }, {} as { [state: string]: { state: string, margin: number, close: number, min: number, max: number } });
 
-    let DemRaceDiff = Object.keys(ResultCountyMap).reduce((prev, current: keyof typeof ResultCountyMap) => {
+    const DemocratRaces = Object.keys(ResultCountyMap).reduce((prev, current: keyof typeof ResultCountyMap) => {
         prev.push([current, { ...ResultCountyMap[current].Dem, opp: ResultCountyMap[current].Rep }]);
         return prev;
-    }, [] as [keyof typeof ResultCountyMap, typeof ResultCountyMap[keyof typeof ResultCountyMap]["Dem"] & { opp: typeof ResultCountyMap[keyof typeof ResultCountyMap]["Rep"] }][]).filter((val) => {
+    }, [] as [keyof typeof ResultCountyMap, typeof ResultCountyMap[keyof typeof ResultCountyMap]["Dem"] & { opp: typeof ResultCountyMap[keyof typeof ResultCountyMap]["Rep"] }][]);
+    let DemRaceDiff = DemocratRaces.filter((val) => {
         const state = (val[0] as string).split('-')[0];
         return closeStates[state] && stateTotals[state].dem > stateTotals[state].rep;
     });
 
-    let RepRaceDiff = Object.keys(ResultCountyMap).reduce((prev, current: keyof typeof ResultCountyMap) => {
+    const RepublicanRaces = Object.keys(ResultCountyMap).reduce((prev, current: keyof typeof ResultCountyMap) => {
         prev.push([current, { ...ResultCountyMap[current].Rep, opp: ResultCountyMap[current].Dem }]);
         return prev;
-    }, [] as [keyof typeof ResultCountyMap, typeof ResultCountyMap[keyof typeof ResultCountyMap]["Rep"] & { opp: typeof ResultCountyMap[keyof typeof ResultCountyMap]["Dem"] }][]).filter((val) => {
+    }, [] as [keyof typeof ResultCountyMap, typeof ResultCountyMap[keyof typeof ResultCountyMap]["Rep"] & { opp: typeof ResultCountyMap[keyof typeof ResultCountyMap]["Dem"] }][]);
+
+    let RepRaceDiff = RepublicanRaces.filter((val) => {
         const state = (val[0] as string).split('-')[0];
         return closeStates[state] && stateTotals[state].dem < stateTotals[state].rep;
     });
 
+    const DownBallotDiffsByStraight = RepublicanRaces.reduce((acc, val) => {
+        const state = (val[0] as string).split('-')[0];
+        const result = val[1];
+        const straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity);
+        const nonStraight = result.pres - straight;
+        const oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity);
+        const oppNonStraight = val[1].opp.pres - oppStraight;
+        const straightPct = straight / (straight + oppStraight) * 100;
+        const nonStraightPct = nonStraight / (nonStraight + oppNonStraight) * 100;
+        acc[state] = acc[state] || [];
+        if ([(straightPct), (nonStraightPct - straightPct)].includes(NaN)) {
+            return acc;
+        }
+        acc[state].push([(straightPct), (nonStraightPct - straightPct)]);
+        return acc;
+    }, {} as { [state: string]: [number, number][] });
+    Object.keys(DownBallotDiffsByStraight).forEach((key) => DownBallotDiffsByStraight[key] =DownBallotDiffsByStraight[key].sort((a, b) => a[0] - b[0]).filter((val)=>Math.abs(val[1]) < 100));
+    console.log(DownBallotDiffsByStraight);
+    writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify(DownBallotDiffsByStraight), "utf-8");
+
     const minimumCount = 175000;
     let demDbDiff: { [state: string]: number } = {};
     let repDbDiff: { [state: string]: number } = {};
-    console.log([
+    const largestNoDownBallotCounties = ([
         ...DemRaceDiff.map((val) => {
             const state = (val[0] as string).split('-')[0];
             const max = Math.max(val[1].gov || 0, val[1].sen || 0, val[1].hou || 0);
@@ -198,4 +220,6 @@ async function scrape() {
     ].filter((val) => val.leadingPresidentVote > minimumCount).sort((a, b) => {
         return (b.pctDeltaDownBallotDiff) - (a.pctDeltaDownBallotDiff);
     }));
-})().then(console.log);
+
+    writeFile("./Outputs/LargestNoDownBallotCounties.json", JSON.stringify(largestNoDownBallotCounties), "utf-8");
+})().then();
