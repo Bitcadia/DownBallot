@@ -196,6 +196,9 @@ function scrape() {
                     var result = val[1];
                     var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity);
                     var nonStraight = result.pres - straight;
+                    if (nonStraight <= 0) {
+                        return acc;
+                    }
                     var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity);
                     var oppNonStraight = val[1].opp.pres - oppStraight;
                     var straightPct = straight / (straight + oppStraight) * 100;
@@ -207,7 +210,7 @@ function scrape() {
                     acc[state].push([(straightPct), (nonStraightPct - straightPct), county]);
                     return acc;
                 }, {});
-                Object.keys(DownBallotDiffsByStraight).forEach(function (key) { return DownBallotDiffsByStraight[key] = DownBallotDiffsByStraight[key].sort(function (a, b) { return a[0] - b[0]; }).filter(function (val) { return Math.abs(val[1]) < 100; }); });
+                Object.keys(DownBallotDiffsByStraight).forEach(function (key) { return DownBallotDiffsByStraight[key] = DownBallotDiffsByStraight[key].sort(function (a, b) { return a[0] - b[0]; }); });
                 console.log(DownBallotDiffsByStraight);
                 promises_1.writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify(DownBallotDiffsByStraight), "utf-8");
                 minimumCount = 175000;

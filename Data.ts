@@ -134,6 +134,9 @@ async function scrape() {
         const result = val[1];
         const straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity);
         const nonStraight = result.pres - straight;
+        if(nonStraight<=0){
+            return acc;
+        }
         const oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity);
         const oppNonStraight = val[1].opp.pres - oppStraight;
         const straightPct = straight / (straight + oppStraight) * 100;
@@ -145,7 +148,7 @@ async function scrape() {
         acc[state].push([(straightPct), (nonStraightPct - straightPct), county]);
         return acc;
     }, {} as { [state: string]: [number, number, string][] });
-    Object.keys(DownBallotDiffsByStraight).forEach((key) => DownBallotDiffsByStraight[key] =DownBallotDiffsByStraight[key].sort((a, b) => a[0] - b[0]).filter((val)=>Math.abs(val[1]) < 100));
+    Object.keys(DownBallotDiffsByStraight).forEach((key) => DownBallotDiffsByStraight[key] =DownBallotDiffsByStraight[key].sort((a, b) => a[0] - b[0]));
     console.log(DownBallotDiffsByStraight);
     writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify(DownBallotDiffsByStraight), "utf-8");
 
