@@ -1,0 +1,105 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<figure class="highcharts-figure">
+    <div id="container"></div>
+</figure>
+<script>
+    (function (doc, win, add, remove, loaded, load) {
+        doc.ready = new Promise(function (resolve) {
+            if (doc.readyState === 'complete') {
+                resolve();
+            } else {
+                function onReady() {
+                    resolve();
+                    doc[remove](loaded, onReady, true);
+                    win[remove](load, onReady, true);
+                }
+                doc[add](loaded, onReady, true);
+                win[add](load, onReady, true);
+            }
+        });
+    })(document, window, 'addEventListener', 'removeEventListener', 'DOMContentLoaded', 'load');
+    (async () => {
+        await document.ready;
+        const fetching = await fetch("./CountyDownBallotDiffsByStraight.json");
+        const data = JSON.parse(await fetching.text());
+        
+            const node = document.createElement("div");
+            node.id = `State-MI-IL-MN-WI`;
+            document.querySelector("#container").appendChild(node);
+            Highcharts.chart(node.id, {
+                chart: {
+                    type: 'scatter',
+                    zoomType: 'xy'
+                },
+                title: {
+                    text: `States: MI-IL-MN-WI`
+                },
+                xAxis: {
+                    title: {
+                        enabled: true,
+                        text: '% of Republican Party Line Voters'
+                    },
+                    startOnTick: true,
+                    endOnTick: true,
+                    showLastLabel: true
+                },
+                yAxis: {
+                    title: {
+                        text: '% Delta of Non-Party Line Voters for Trump'
+                    },
+                    max: 100,
+                    min: -100
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'left',
+                    verticalAlign: 'top',
+                    x: 100,
+                    y: 70,
+                    floating: true,
+                    backgroundColor: Highcharts.defaultOptions.chart.backgroundColor,
+                    borderWidth: 1
+                },
+                plotOptions: {
+                    scatter: {
+                        marker: {
+                            radius: 5,
+                            states: {
+                                hover: {
+                                    enabled: true,
+                                    lineColor: 'rgb(100,100,100)'
+                                }
+                            }
+                        },
+                        states: {
+                            hover: {
+                                marker: {
+                                    enabled: false
+                                }
+                            }
+                        },
+                        tooltip: {
+                            pointFormater: function() {
+                                debugger;
+                                console.log(this);
+                                return `${point.x} % Straight Rep, ${point.y} % Individual Pres`
+                            }
+                        }
+                    }
+                },
+                series: Object.keys(data)
+                .filter((state)=>["IL","MN","WI","MI"].includes(state))
+                .sort((a,b)=>["IL","MN","WI"].includes(a)?-1:1)
+                .map((state) => { return {
+                    name: state,
+                    color: ["IL","MN","WI"].includes(state) ? "red": "blue",
+                    data:  data[state]
+                }})
+            });
+    })()
+
+</script>
