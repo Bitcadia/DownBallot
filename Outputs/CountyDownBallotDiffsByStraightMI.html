@@ -97,14 +97,14 @@
                 },
                 data: Object.keys(data.TrumpDownBallotVsStraight)
                     .filter((state) => ["IL", "MN", "WI"].includes(state))
-                    .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, [])
+                    .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, []).map((val)=>{
+                        x:val[0]
+                        y:val[1]
+                        name:val[3]
+                    })
             }, {
                 name: "Trump MI",
                 color: "Red",
-                dataLabels: {
-                    enabled: true,
-                    format: "point.value[2]"
-                },
                 regression: true,
                 regressionSettings: {
                     type: 'linear',
@@ -112,7 +112,11 @@
                 },
                 data: Object.keys(data.TrumpDownBallotVsStraight)
                     .filter((state) => ["MI"].includes(state))
-                    .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, [])
+                    .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, []).map((val)=>{
+                        x:val[0]
+                        y:val[1]
+                        name:val[3]
+                    })
             }]
         });
 
@@ -186,7 +190,11 @@
                 },
                 data: Object.keys(data.BidenDownBallotVsStraight)
                     .filter((state) => ["IL", "MN", "WI"].includes(state))
-                    .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, [])
+                    .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, []).map((val)=>{
+                        x:val[0]
+                        y:val[1]
+                        name:val[3]
+                    })
             }, {
                 name: "Biden MI",
                 color: "Blue",
@@ -197,7 +205,11 @@
                 },
                 data: Object.keys(data.BidenDownBallotVsStraight)
                     .filter((state) => ["MI"].includes(state))
-                    .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, [])
+                    .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, []).map((val)=>{
+                        x:val[0]
+                        y:val[1]
+                        name:val[3]
+                    })
             }]
         });
     })()

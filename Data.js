@@ -209,7 +209,7 @@ function scrape() {
                         var ratioStraightPres = straightPres / totalStraight;
                         var ratioNonStraightPres = nonStraightPres / totalNonStraight;
                         acc[state] = acc[state] || [];
-                        acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county + ": " + result.pres + " to " + result.opp.pres]);
+                        acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county]);
                     }
                     return acc;
                 }, {});
@@ -229,7 +229,7 @@ function scrape() {
                         var ratioStraightPres = straightPres / totalStraight;
                         var ratioNonStraightPres = nonStraightPres / totalNonStraight;
                         acc[state] = acc[state] || [];
-                        acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county + ": " + result.pres + " to " + result.opp.pres]);
+                        acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county]);
                     }
                     return acc;
                 }, {});

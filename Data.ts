@@ -150,7 +150,7 @@ async function scrape() {
             const ratioStraightPres = straightPres / totalStraight;
             const ratioNonStraightPres = nonStraightPres / totalNonStraight;
             acc[state] = acc[state] || [];
-            acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), `${county}: ${result.pres} to ${result.opp.pres}`]);
+            acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county]);
         }
         return acc;
     }, {} as { [state: string]: [number, number, string][] });
@@ -173,7 +173,7 @@ async function scrape() {
             const ratioStraightPres = straightPres / totalStraight;
             const ratioNonStraightPres = nonStraightPres / totalNonStraight;
             acc[state] = acc[state] || [];
-            acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), `${county}: ${result.pres} to ${result.opp.pres}`]);
+            acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county]);
         }
         return acc;
     }, {} as { [state: string]: [number, number, string][] });
