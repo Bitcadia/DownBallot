@@ -197,40 +197,36 @@ function scrape() {
                 TrumpDownBallotVsStraight = RepublicanRaces.reduce(function (acc, val) {
                     var _a = val[0].split('-'), state = _a[0], county = _a[1];
                     var result = val[1];
-                    var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity, result.pres || Infinity);
-                    if (result.pres !== straight) {
-                        var nonStraight = Math.max(result.gov || 0, result.sen || 0, result.hou || 0, result.pres || 0) - straight;
-                        var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity, result.opp.pres || Infinity);
-                        var oppNonStraight = Math.max(result.opp.gov || 0, result.opp.sen || 0, result.opp.hou || 0, result.opp.pres || 0) - oppStraight;
-                        var totalStraight = straight + oppStraight;
-                        var totalNonStraight = nonStraight + oppNonStraight;
-                        var nonStraightPres = result.pres - straight;
-                        var straightPres = straight;
-                        var ratioStraightPres = straightPres / totalStraight;
-                        var ratioNonStraightPres = nonStraightPres / totalNonStraight;
-                        acc[state] = acc[state] || [];
-                        acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county]);
-                    }
+                    var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity, result.pres || Infinity) * 0.9;
+                    var nonStraight = Math.max(result.gov || 0, result.sen || 0, result.hou || 0, result.pres || 0) - straight;
+                    var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity, result.opp.pres || Infinity) * 0.9;
+                    var oppNonStraight = Math.max(result.opp.gov || 0, result.opp.sen || 0, result.opp.hou || 0, result.opp.pres || 0) - oppStraight;
+                    var totalStraight = straight + oppStraight;
+                    var totalNonStraight = nonStraight + oppNonStraight;
+                    var nonStraightPres = result.pres - straight;
+                    var straightPres = straight;
+                    var ratioStraightPres = straightPres / totalStraight;
+                    var ratioNonStraightPres = nonStraightPres / totalNonStraight;
+                    acc[state] = acc[state] || [];
+                    acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county]);
                     return acc;
                 }, {});
                 Object.keys(TrumpDownBallotVsStraight).forEach(function (key) { return TrumpDownBallotVsStraight[key] = TrumpDownBallotVsStraight[key].sort(function (a, b) { return a[0] - b[0]; }); });
                 BidenDownBallotVsStraight = DemocratRaces.reduce(function (acc, val) {
                     var _a = val[0].split('-'), state = _a[0], county = _a[1];
                     var result = val[1];
-                    var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity, result.pres || Infinity);
-                    if (result.pres !== straight) {
-                        var nonStraight = Math.max(result.gov || 0, result.sen || 0, result.hou || 0, result.pres || 0) - straight;
-                        var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity, result.opp.pres || Infinity);
-                        var oppNonStraight = Math.max(result.opp.gov || 0, result.opp.sen || 0, result.opp.hou || 0, result.opp.pres || 0) - oppStraight;
-                        var totalStraight = straight + oppStraight;
-                        var totalNonStraight = nonStraight + oppNonStraight;
-                        var nonStraightPres = result.pres - straight;
-                        var straightPres = straight;
-                        var ratioStraightPres = straightPres / totalStraight;
-                        var ratioNonStraightPres = nonStraightPres / totalNonStraight;
-                        acc[state] = acc[state] || [];
-                        acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county]);
-                    }
+                    var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity, result.pres || Infinity) * 0.9;
+                    var nonStraight = Math.max(result.gov || 0, result.sen || 0, result.hou || 0, result.pres || 0) - straight;
+                    var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity, result.opp.pres || Infinity) * 0.9;
+                    var oppNonStraight = Math.max(result.opp.gov || 0, result.opp.sen || 0, result.opp.hou || 0, result.opp.pres || 0) - oppStraight;
+                    var totalStraight = straight + oppStraight;
+                    var totalNonStraight = nonStraight + oppNonStraight;
+                    var nonStraightPres = result.pres - straight;
+                    var straightPres = straight;
+                    var ratioStraightPres = straightPres / totalStraight;
+                    var ratioNonStraightPres = nonStraightPres / totalNonStraight;
+                    acc[state] = acc[state] || [];
+                    acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county]);
                     return acc;
                 }, {});
                 Object.keys(BidenDownBallotVsStraight).forEach(function (key) { return BidenDownBallotVsStraight[key] = BidenDownBallotVsStraight[key].sort(function (a, b) { return a[0] - b[0]; }); });
