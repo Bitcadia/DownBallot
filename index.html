@@ -30,7 +30,7 @@
         Object.keys(data).forEach((key) => {
             Object.keys(data[key]).forEach((state) => {
                 const node = document.createElement("div");
-                node.id = `${key.slice(0,5)} State-${state}`;
+                node.id = `State-${state}`;
                 document.querySelector("#container").appendChild(node);
                 Highcharts.chart(node.id, {
                     chart: {
@@ -38,7 +38,7 @@
                         zoomType: 'xy'
                     },
                     title: {
-                        text: `${key.slice(0,5)} State: ${state}`
+                        text: `State: ${state}`
                     },
                     xAxis: {
                         title: {
