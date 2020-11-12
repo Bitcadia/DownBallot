@@ -85,7 +85,7 @@ function scrape() {
     });
 }
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, gov, sen, pres, hou, ResultCountyMap, stateTotals, ECAndPopularResultsWeightedByCounty, closeStates, DemocratRaces, DemRaceDiff, RepublicanRaces, RepRaceDiff, DownBallotDiffsByStraight, minimumCount, demDbDiff, repDbDiff, largestNoDownBallotCounties;
+    var _a, gov, sen, pres, hou, ResultCountyMap, stateTotals, ECAndPopularResultsWeightedByCounty, closeStates, DemocratRaces, DemRaceDiff, RepublicanRaces, RepRaceDiff, TrumpDownBallotVsStraight, BidenDownBallotVsStraight, minimumCount, demDbDiff, repDbDiff, largestNoDownBallotCounties;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0: return [4 /*yield*/, scrape()];
@@ -117,6 +117,9 @@ function scrape() {
                         sen: secondSenResults,
                         win: false
                     };
+                    if (county.includes("DC")) {
+                        return counties;
+                    }
                     counties[county] = {
                         Rep: wResult.party === "(R)" ? wResult : lResult,
                         Dem: wResult.party === "(D)" ? wResult : lResult
@@ -191,28 +194,47 @@ function scrape() {
                     var state = val[0].split('-')[0];
                     return closeStates[state] && stateTotals[state].dem < stateTotals[state].rep;
                 });
-                DownBallotDiffsByStraight = RepublicanRaces.reduce(function (acc, val) {
+                TrumpDownBallotVsStraight = RepublicanRaces.reduce(function (acc, val) {
                     var _a = val[0].split('-'), state = _a[0], county = _a[1];
                     var result = val[1];
-                    var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity);
-                    var nonStraight = result.pres - straight;
-                    if (nonStraight <= 0) {
-                        return acc;
+                    var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity, result.pres || Infinity);
+                    if (result.pres !== straight) {
+                        var nonStraight = Math.max(result.gov || 0, result.sen || 0, result.hou || 0, result.pres || 0) - straight;
+                        var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity, result.opp.pres || Infinity);
+                        var oppNonStraight = Math.max(result.opp.gov || 0, result.opp.sen || 0, result.opp.hou || 0, result.opp.pres || 0) - oppStraight;
+                        var totalStraight = straight + oppStraight;
+                        var totalNonStraight = nonStraight + oppNonStraight;
+                        var nonStraightPres = result.pres - straight;
+                        var straightPres = straight;
+                        var ratioStraightPres = straightPres / totalStraight;
+                        var ratioNonStraightPres = nonStraightPres / totalNonStraight;
+                        acc[state] = acc[state] || [];
+                        acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county + ": " + result.pres + " to " + result.opp.pres]);
                     }
-                    var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity);
-                    var oppNonStraight = val[1].opp.pres - oppStraight;
-                    var straightPct = straight / (straight + oppStraight) * 100;
-                    var nonStraightPct = nonStraight / (nonStraight + oppNonStraight) * 100;
-                    acc[state] = acc[state] || [];
-                    if ([(straightPct), (nonStraightPct - straightPct)].includes(NaN)) {
-                        return acc;
-                    }
-                    acc[state].push([(straightPct), (nonStraightPct - straightPct), county]);
                     return acc;
                 }, {});
-                Object.keys(DownBallotDiffsByStraight).forEach(function (key) { return DownBallotDiffsByStraight[key] = DownBallotDiffsByStraight[key].sort(function (a, b) { return a[0] - b[0]; }); });
-                console.log(DownBallotDiffsByStraight);
-                promises_1.writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify(DownBallotDiffsByStraight), "utf-8");
+                Object.keys(TrumpDownBallotVsStraight).forEach(function (key) { return TrumpDownBallotVsStraight[key] = TrumpDownBallotVsStraight[key].sort(function (a, b) { return a[0] - b[0]; }); });
+                BidenDownBallotVsStraight = DemocratRaces.reduce(function (acc, val) {
+                    var _a = val[0].split('-'), state = _a[0], county = _a[1];
+                    var result = val[1];
+                    var straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity, result.pres || Infinity);
+                    if (result.pres !== straight) {
+                        var nonStraight = Math.max(result.gov || 0, result.sen || 0, result.hou || 0, result.pres || 0) - straight;
+                        var oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity, result.opp.pres || Infinity);
+                        var oppNonStraight = Math.max(result.opp.gov || 0, result.opp.sen || 0, result.opp.hou || 0, result.opp.pres || 0) - oppStraight;
+                        var totalStraight = straight + oppStraight;
+                        var totalNonStraight = nonStraight + oppNonStraight;
+                        var nonStraightPres = result.pres - straight;
+                        var straightPres = straight;
+                        var ratioStraightPres = straightPres / totalStraight;
+                        var ratioNonStraightPres = nonStraightPres / totalNonStraight;
+                        acc[state] = acc[state] || [];
+                        acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), county + ": " + result.pres + " to " + result.opp.pres]);
+                    }
+                    return acc;
+                }, {});
+                Object.keys(BidenDownBallotVsStraight).forEach(function (key) { return BidenDownBallotVsStraight[key] = BidenDownBallotVsStraight[key].sort(function (a, b) { return a[0] - b[0]; }); });
+                promises_1.writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify({ TrumpDownBallotVsStraight: TrumpDownBallotVsStraight, BidenDownBallotVsStraight: BidenDownBallotVsStraight }), "utf-8");
                 minimumCount = 175000;
                 demDbDiff = {};
                 repDbDiff = {};

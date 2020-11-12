@@ -562,7 +562,7 @@ export const HouseResults = (async () => {
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
-                const vote = Number.parseInt(val.text.replace(',', ""));
+                const vote = Number.parseInt(val.text.replace(/,/g,""));
                 return isNaN(vote) ? 0 : vote;
             })
         );
@@ -594,7 +594,7 @@ export const GovResults = (async () => {
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
-                const vote = Number.parseInt(val.text.replace(',', ""));
+                const vote = Number.parseInt(val.text.replace(/,/g,""));
                 return isNaN(vote) ? 0 : vote;
             })
         );
@@ -626,7 +626,7 @@ export const PresResults = (async () => {
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
-                const vote = Number.parseInt(val.text.replace(',', ""));
+                const vote = Number.parseInt(val.text.replace(/,/g,""));
                 return isNaN(vote) ? 0 : vote;
             })
         );
@@ -658,7 +658,7 @@ export const SenResults = (async () => {
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
-                const vote = Number.parseInt(val.text.replace(',', ""));
+                const vote = Number.parseInt(val.text.replace(/,/g,""));
                 return isNaN(vote) ? 0 : vote;
             })
         );

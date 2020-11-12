@@ -42,6 +42,9 @@ async function scrape() {
             sen: secondSenResults,
             win: false
         };
+        if (county.includes("DC")) {
+            return counties
+        }
         counties[county] = {
             Rep: wResult.party === "(R)" ? wResult : lResult,
             Dem: wResult.party === "(D)" ? wResult : lResult,
@@ -129,28 +132,53 @@ async function scrape() {
         return closeStates[state] && stateTotals[state].dem < stateTotals[state].rep;
     });
 
-    const DownBallotDiffsByStraight = RepublicanRaces.reduce((acc, val) => {
+    const TrumpDownBallotVsStraight = RepublicanRaces.reduce((acc, val) => {
         const [state, county] = (val[0] as string).split('-');
         const result = val[1];
-        const straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity);
-        const nonStraight = result.pres - straight;
-        if(nonStraight<=0){
-            return acc;
+        const straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity, result.pres || Infinity);
+        if (result.pres !== straight) {
+            const nonStraight = Math.max(result.gov || 0, result.sen || 0, result.hou || 0, result.pres || 0) - straight;
+
+            const oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity, result.opp.pres || Infinity);
+            const oppNonStraight = Math.max(result.opp.gov || 0, result.opp.sen || 0, result.opp.hou || 0, result.opp.pres || 0) - oppStraight;
+
+            const totalStraight = straight + oppStraight;
+            const totalNonStraight = nonStraight + oppNonStraight;
+
+            const nonStraightPres = result.pres - straight;
+            const straightPres = straight;
+            const ratioStraightPres = straightPres / totalStraight;
+            const ratioNonStraightPres = nonStraightPres / totalNonStraight;
+            acc[state] = acc[state] || [];
+            acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), `${county}: ${result.pres} to ${result.opp.pres}`]);
         }
-        const oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity);
-        const oppNonStraight = val[1].opp.pres - oppStraight;
-        const straightPct = straight / (straight + oppStraight) * 100;
-        const nonStraightPct = nonStraight / (nonStraight + oppNonStraight) * 100;
-        acc[state] = acc[state] || [];
-        if ([(straightPct), (nonStraightPct - straightPct)].includes(NaN)) {
-            return acc;
-        }
-        acc[state].push([(straightPct), (nonStraightPct - straightPct), county]);
         return acc;
     }, {} as { [state: string]: [number, number, string][] });
-    Object.keys(DownBallotDiffsByStraight).forEach((key) => DownBallotDiffsByStraight[key] =DownBallotDiffsByStraight[key].sort((a, b) => a[0] - b[0]));
-    console.log(DownBallotDiffsByStraight);
-    writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify(DownBallotDiffsByStraight), "utf-8");
+    Object.keys(TrumpDownBallotVsStraight).forEach((key) => TrumpDownBallotVsStraight[key] = TrumpDownBallotVsStraight[key].sort((a, b) => a[0] - b[0]));
+    const BidenDownBallotVsStraight = DemocratRaces.reduce((acc, val) => {
+        const [state, county] = (val[0] as string).split('-');
+        const result = val[1];
+        const straight = Math.min(result.gov || Infinity, result.sen || Infinity, result.hou || Infinity, result.pres || Infinity);
+        if (result.pres !== straight) {
+            const nonStraight = Math.max(result.gov || 0, result.sen || 0, result.hou || 0, result.pres || 0) - straight;
+
+            const oppStraight = Math.min(result.opp.gov || Infinity, result.opp.sen || Infinity, result.opp.hou || Infinity, result.opp.pres || Infinity);
+            const oppNonStraight = Math.max(result.opp.gov || 0, result.opp.sen || 0, result.opp.hou || 0, result.opp.pres || 0) - oppStraight;
+
+            const totalStraight = straight + oppStraight;
+            const totalNonStraight = nonStraight + oppNonStraight;
+
+            const nonStraightPres = result.pres - straight;
+            const straightPres = straight;
+            const ratioStraightPres = straightPres / totalStraight;
+            const ratioNonStraightPres = nonStraightPres / totalNonStraight;
+            acc[state] = acc[state] || [];
+            acc[state].push([(ratioStraightPres * 100), ((ratioNonStraightPres - ratioStraightPres) * 100), `${county}: ${result.pres} to ${result.opp.pres}`]);
+        }
+        return acc;
+    }, {} as { [state: string]: [number, number, string][] });
+    Object.keys(BidenDownBallotVsStraight).forEach((key) => BidenDownBallotVsStraight[key] = BidenDownBallotVsStraight[key].sort((a, b) => a[0] - b[0]));
+    writeFile("./Outputs/CountyDownBallotDiffsByStraight.json", JSON.stringify({ TrumpDownBallotVsStraight, BidenDownBallotVsStraight }), "utf-8");
 
     const minimumCount = 175000;
     let demDbDiff: { [state: string]: number } = {};

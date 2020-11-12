@@ -635,7 +635,7 @@ exports.HouseResults = (function () { return __awaiter(void 0, void 0, void 0, f
                             }, val.innerText);
                         });
                         var countyVotes = lodash_1.zip(root.querySelectorAll(".result-county-table-col-candidate").map(function (val) { return val.text.split(" ").filter(function (val) { return val !== '*'; }).slice(-1)[0]; }), root.querySelectorAll(".result-county-table-col-votes").map(function (val) {
-                            var vote = Number.parseInt(val.text.replace(',', ""));
+                            var vote = Number.parseInt(val.text.replace(/,/g, ""));
                             return isNaN(vote) ? 0 : vote;
                         }));
                         return __spreadArrays(counties).reduce(function (acc, county) {
@@ -680,7 +680,7 @@ exports.GovResults = (function () { return __awaiter(void 0, void 0, void 0, fun
                             }, val.innerText);
                         });
                         var countyVotes = lodash_1.zip(root.querySelectorAll(".result-county-table-col-candidate").map(function (val) { return val.text.split(" ").filter(function (val) { return val !== '*'; }).slice(-1)[0]; }), root.querySelectorAll(".result-county-table-col-votes").map(function (val) {
-                            var vote = Number.parseInt(val.text.replace(',', ""));
+                            var vote = Number.parseInt(val.text.replace(/,/g, ""));
                             return isNaN(vote) ? 0 : vote;
                         }));
                         return __spreadArrays(counties).reduce(function (acc, county) {
@@ -725,7 +725,7 @@ exports.PresResults = (function () { return __awaiter(void 0, void 0, void 0, fu
                             }, val.innerText);
                         });
                         var countyVotes = lodash_1.zip(root.querySelectorAll(".result-county-table-col-candidate").map(function (val) { return val.text.split(" ").filter(function (val) { return val !== '*'; }).slice(-1)[0]; }), root.querySelectorAll(".result-county-table-col-votes").map(function (val) {
-                            var vote = Number.parseInt(val.text.replace(',', ""));
+                            var vote = Number.parseInt(val.text.replace(/,/g, ""));
                             return isNaN(vote) ? 0 : vote;
                         }));
                         return __spreadArrays(counties).reduce(function (acc, county) {
@@ -770,7 +770,7 @@ exports.SenResults = (function () { return __awaiter(void 0, void 0, void 0, fun
                             }, val.innerText);
                         });
                         var countyVotes = lodash_1.zip(root.querySelectorAll(".result-county-table-col-candidate").map(function (val) { return val.text.split(" ").filter(function (val) { return val !== '*'; }).slice(-1)[0]; }), root.querySelectorAll(".result-county-table-col-votes").map(function (val) {
-                            var vote = Number.parseInt(val.text.replace(',', ""));
+                            var vote = Number.parseInt(val.text.replace(/,/g, ""));
                             return isNaN(vote) ? 0 : vote;
                         }));
                         return __spreadArrays(counties).reduce(function (acc, county) {
