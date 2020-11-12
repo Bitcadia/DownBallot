@@ -93,12 +93,14 @@
                     type: 'linear',
                 },
                 data: Object.keys(data.BidenDownBallotVsStraight)
-                    .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, []).map((val)=>{
-                        x:val[0]
-                        y:val[1]
-                        name:val[2]
+                    .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, []).map((val) => {
+                        return {
+                            x: val[0],
+                            y: val[1],
+                            name: val[2]
+                        }
                     })
-            },{
+            }, {
                 name: "Trump",
                 color: "Red",
                 regression: true,
@@ -106,10 +108,12 @@
                     type: 'linear',
                 },
                 data: Object.keys(data.TrumpDownBallotVsStraight)
-                    .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, []).map((val)=>{
-                        x:val[0]
-                        y:val[1]
-                        name:val[2]
+                    .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, []).map((val) => {
+                        return {
+                            x: val[0],
+                            y: val[1],
+                            name: val[2]
+                        }
                     })
             }]
         });
