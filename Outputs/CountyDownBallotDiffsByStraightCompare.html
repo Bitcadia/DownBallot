@@ -5,6 +5,12 @@
 <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
 
 <figure class="highcharts-figure">
+    <form action="./CountyDownBallotDiffsByStraightCompare.html">
+        <label for="First">Compare (comma separated)</label>
+        <input id="First" name="First" type="text" />
+        <input id="Second" name="Second" type="text" />
+        <input type="submit" value="Submit">
+    </form>
     <div id="container"></div>
 </figure>
 <script>
@@ -27,7 +33,13 @@
         await document.ready;
         const fetching = await fetch("./CountyDownBallotDiffsByStraight.json");
         const data = JSON.parse(await fetching.text());
-
+        const urlParams = new URLSearchParams(window.location.search);
+        const first = urlParams.get('First') || "MI";
+        const second = urlParams.get('Second') || "IL,MN,WI";
+        document.querySelector("#First").value = first;
+        document.querySelector("#Second").value = second;
+        const firstFilter = first.split(",");
+        const secondFilter = second.split(",");
         let node = document.createElement("div");
         node.id = `State-Trump`;
         document.querySelector("#container").appendChild(node);
@@ -88,15 +100,15 @@
                 }
             },
             series: [{
-                name: "Trump IL MN WI",
-                color: "#e75480",
+                name: `Trump ${secondFilter.join("-")}`,
+                color: "Pink",
                 regression: true,
                 regressionSettings: {
                     type: 'linear',
-                    color: "#e75480",
+                    color: "Pink",
                 },
                 data: Object.keys(data.TrumpDownBallotVsStraight)
-                    .filter((state) => ["IL", "MN", "WI"].includes(state))
+                    .filter((state) => secondFilter.includes(state))
                     .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, []).map((val) => {
                         return {
                             x: val[0],
@@ -105,7 +117,7 @@
                         }
                     })
             }, {
-                name: "Trump MI",
+                name: `Trump ${firstFilter.join("-")}`,
                 color: "Red",
                 regression: true,
                 regressionSettings: {
@@ -113,7 +125,7 @@
                     color: "Red",
                 },
                 data: Object.keys(data.TrumpDownBallotVsStraight)
-                    .filter((state) => ["MI"].includes(state))
+                    .filter((state) => firstFilter.includes(state))
                     .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, []).map((val) => {
                         return {
                             x: val[0],
@@ -184,7 +196,7 @@
                 }
             },
             series: [{
-                name: "Biden IL MN WI",
+                name: `Biden ${secondFilter.join("-")}`,
                 color: "#add8e6",
                 regression: true,
                 regressionSettings: {
@@ -192,7 +204,7 @@
                     color: "#add8e6",
                 },
                 data: Object.keys(data.BidenDownBallotVsStraight)
-                    .filter((state) => ["IL", "MN", "WI"].includes(state))
+                    .filter((state) => secondFilter.includes(state))
                     .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, []).map((val) => {
                         return {
                             x: val[0],
@@ -201,7 +213,7 @@
                         }
                     })
             }, {
-                name: "Biden MI",
+                name: `Biden ${firstFilter.join("-")}`,
                 color: "Blue",
                 regression: true,
                 regressionSettings: {
@@ -209,7 +221,7 @@
                     color: "Blue",
                 },
                 data: Object.keys(data.BidenDownBallotVsStraight)
-                    .filter((state) => ["MI"].includes(state))
+                    .filter((state) => firstFilter.includes(state))
                     .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, []).map((val) => {
                         return {
                             x: val[0],
