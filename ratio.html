@@ -1,0 +1,112 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
+
+<figure class="highcharts-figure">
+    <form action="./ratio.html">
+        <label for="First">Compare (comma separated)</label>
+        <input id="First" name="First" type="text" />
+        <input type="submit" value="Submit">
+    </form>
+    <div id="container"></div>
+</figure>
+<script>
+    (function (doc, win, add, remove, loaded, load) {
+        doc.ready = new Promise(function (resolve) {
+            if (doc.readyState === 'complete') {
+                resolve();
+            } else {
+                function onReady() {
+                    resolve();
+                    doc[remove](loaded, onReady, true);
+                    win[remove](load, onReady, true);
+                }
+                doc[add](loaded, onReady, true);
+                win[add](load, onReady, true);
+            }
+        });
+    })(document, window, 'addEventListener', 'removeEventListener', 'DOMContentLoaded', 'load');
+    (async () => {
+        await document.ready;
+        const urlParams = new URLSearchParams(window.location.search);
+        const first = urlParams.get('First') || "MI,WI,NV,AZ,PA,GA";
+        document.querySelector("#First").value = first;
+        const firstFilter = first.split(",");
+        const fetching = await fetch("./Outputs/StraightIndividualRatio.json");
+        const data = JSON.parse(await fetching.text());
+        Object.keys(data).forEach((key) => {
+            Object.keys(data[key]).filter((state)=>firstFilter.includes(state)).forEach((state) => {
+                const node = document.createElement("div");
+                node.id = `State-${state}`;
+                document.querySelector("#container").appendChild(node);
+                Highcharts.chart(node.id, {
+                    chart: {
+                        type: 'bubble',
+                        plotBorderWidth: 1,
+                        zoomType: 'xy'
+                    },
+                    title: {
+                        text: `State: ${state}`
+                    },
+                    xAxis: {
+                        title: {
+                            enabled: true,
+                            text: '% Straight Ballot Leans'
+                        },
+                        min: -100,
+                        max: 100,
+                        startOnTick: true,
+                        endOnTick: true,
+                        showLastLabel: true
+                    },
+                    yAxis: {
+                        title: {
+                            text: '% Non-Party Line Voters'
+                        }
+                    },
+                    legend: {
+                        layout: 'horizontal',
+                        backgroundColor: Highcharts.defaultOptions.chart.backgroundColor,
+                        borderWidth: 1
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}'
+                            }
+                        }
+                    },
+                    series: [{
+                        name: "Trump",
+                        color: 'rgb(255,0,0)',
+                        data: data.TrumpDownStraightIndividualRatio[state].map((val) => {
+                            return {
+                                x: 2*(val[0]-50),
+                                y: val[1],
+                                z: val[2],
+                                name: val[3],
+                            };
+                        }),
+                    }, {
+                        name: "Biden",
+                        color: 'rgba(0,0,255,0.1)',
+                        data: data.BidenDownStraightIndividualRatio[state].map((val) => {
+                            return {
+                                x: 2*((val[0]*-1)+50),
+                                y: val[1],
+                                z: val[2],
+                                name: val[3],
+                            }
+                        }),
+                    }]
+                });
+            })
+
+        });
+    })()
+
+</script>

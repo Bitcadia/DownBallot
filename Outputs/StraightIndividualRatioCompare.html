@@ -2,10 +2,11 @@
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
 <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
 
 <figure class="highcharts-figure">
-    <form action="./CountyDownBallotDiffsByStraightCompare.html">
+    <form action="./StraightIndividualRatioCompare.html">
         <label for="First">Compare (comma separated)</label>
         <input id="First" name="First" type="text" />
         <input id="Second" name="Second" type="text" />
@@ -31,7 +32,7 @@
     })(document, window, 'addEventListener', 'removeEventListener', 'DOMContentLoaded', 'load');
     (async () => {
         await document.ready;
-        const fetching = await fetch("./CountyDownBallotDiffsByStraight.json");
+        const fetching = await fetch("./StraightIndividualRatio.json");
         const data = JSON.parse(await fetching.text());
         const urlParams = new URLSearchParams(window.location.search);
         const first = urlParams.get('First') || "MI";
@@ -45,7 +46,8 @@
         document.querySelector("#container").appendChild(node);
         Highcharts.chart(node.id, {
             chart: {
-                type: 'scatter',
+                type: 'bubble',
+                plotBorderWidth: 1,
                 zoomType: 'xy'
             },
             title: {
@@ -54,17 +56,15 @@
             xAxis: {
                 title: {
                     enabled: true,
-                    text: '% Of Party-line That Voted For Candidate'
+                    text: '% of Party Line Voters'
                 },
                 startOnTick: true,
                 endOnTick: true,
-                showLastLabel: true,
-                max: 100,
-                min: 0
+                showLastLabel: true
             },
             yAxis: {
                 title: {
-                    text: '% of Individual That voted for Candidate'
+                    text: '% Delta of Non-Party Line Voters and President'
                 }
             },
             legend: {
@@ -73,22 +73,10 @@
                 borderWidth: 1
             },
             plotOptions: {
-                scatter: {
-                    marker: {
-                        radius: 5,
-                        states: {
-                            hover: {
-                                enabled: true,
-                                lineColor: 'rgb(100,100,100)'
-                            }
-                        }
-                    },
-                    states: {
-                        hover: {
-                            marker: {
-                                enabled: false
-                            }
-                        }
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}'
                     }
                 }
             },
@@ -100,14 +88,15 @@
                     type: 'linear',
                     color: "Pink",
                 },
-                data: Object.keys(data.TrumpDownBallotVsStraight)
+                data: Object.keys(data.TrumpDownStraightIndividualRatio)
                     .filter((state) => secondFilter.includes(state))
-                    .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, []).map((val) => {
+                    .reduce((acc, state) => { acc.push(...data.TrumpDownStraightIndividualRatio[state]); return acc }, []).map((val) => {
                         return {
                             x: val[0],
                             y: val[1],
-                            name: val[2]
-                        }
+                            z: val[2],
+                            name: val[3],
+                        };
                     })
             }, {
                 name: `Trump ${firstFilter.join("-")}`,
@@ -117,14 +106,15 @@
                     type: 'linear',
                     color: "Red",
                 },
-                data: Object.keys(data.TrumpDownBallotVsStraight)
+                data: Object.keys(data.TrumpDownStraightIndividualRatio)
                     .filter((state) => firstFilter.includes(state))
-                    .reduce((acc, state) => { acc.push(...data.TrumpDownBallotVsStraight[state]); return acc }, []).map((val) => {
+                    .reduce((acc, state) => { acc.push(...data.TrumpDownStraightIndividualRatio[state]); return acc }, []).map((val) => {
                         return {
                             x: val[0],
                             y: val[1],
-                            name: val[2]
-                        }
+                            z: val[2],
+                            name: val[3],
+                        };
                     })
             }]
         });
@@ -134,7 +124,8 @@
         document.querySelector("#container").appendChild(node);
         Highcharts.chart(node.id, {
             chart: {
-                type: 'scatter',
+                type: 'bubble',
+                plotBorderWidth: 1,
                 zoomType: 'xy'
             },
             title: {
@@ -143,7 +134,7 @@
             xAxis: {
                 title: {
                     enabled: true,
-                    text: '% Of Party-line That Voted For Candidate'
+                    text: '% of Party Line Voters'
                 },
                 startOnTick: true,
                 endOnTick: true,
@@ -153,7 +144,7 @@
             },
             yAxis: {
                 title: {
-                    text: '% of Individual That voted for Candidate'
+                    text: '% of Total votes split ballot'
                 }
             },
             legend: {
@@ -162,22 +153,10 @@
                 borderWidth: 1
             },
             plotOptions: {
-                scatter: {
-                    marker: {
-                        radius: 5,
-                        states: {
-                            hover: {
-                                enabled: true,
-                                lineColor: 'rgb(100,100,100)'
-                            }
-                        }
-                    },
-                    states: {
-                        hover: {
-                            marker: {
-                                enabled: false
-                            }
-                        }
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}'
                     }
                 }
             },
@@ -189,13 +168,14 @@
                     type: 'linear',
                     color: "#add8e6",
                 },
-                data: Object.keys(data.BidenDownBallotVsStraight)
+                data: Object.keys(data.BidenDownStraightIndividualRatio)
                     .filter((state) => secondFilter.includes(state))
-                    .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, []).map((val) => {
+                    .reduce((acc, state) => { acc.push(...data.BidenDownStraightIndividualRatio[state]); return acc }, []).map((val) => {
                         return {
                             x: val[0],
                             y: val[1],
-                            name: val[2]
+                            z: val[2],
+                            name: val[3],
                         }
                     })
             }, {
@@ -206,13 +186,14 @@
                     type: 'linear',
                     color: "Blue",
                 },
-                data: Object.keys(data.BidenDownBallotVsStraight)
+                data: Object.keys(data.BidenDownStraightIndividualRatio)
                     .filter((state) => firstFilter.includes(state))
-                    .reduce((acc, state) => { acc.push(...data.BidenDownBallotVsStraight[state]); return acc }, []).map((val) => {
+                    .reduce((acc, state) => { acc.push(...data.BidenDownStraightIndividualRatio[state]); return acc }, []).map((val) => {
                         return {
                             x: val[0],
                             y: val[1],
-                            name: val[2]
+                            z: val[2],
+                            name: val[3],
                         }
                     })
             }]
