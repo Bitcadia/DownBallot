@@ -248,7 +248,7 @@ function scrape() {
                         return acc;
                     }
                     var nonStraightMarginRatio = nonStraight / oppNonStraight;
-                    acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraightMargin, county + "-" + nonStraightMarginRatio.toPrecision(3) + "x"]);
+                    acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraightMargin, nonStraightMarginRatio, county]);
                     return acc;
                 }, {});
                 Object.keys(TrumpDownStraightIndividualRatio).forEach(function (key) { return TrumpDownStraightIndividualRatio[key] = TrumpDownStraightIndividualRatio[key].sort(function (a, b) { return a[0] - b[0]; }); });
@@ -269,7 +269,7 @@ function scrape() {
                         return acc;
                     }
                     var nonStraightMarginRatio = nonStraight / oppNonStraight;
-                    acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraightMargin, county + "-" + nonStraightMarginRatio.toPrecision(3) + "x"]);
+                    acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraightMargin, nonStraightMarginRatio, county]);
                     return acc;
                 }, {});
                 Object.keys(BidenDownStraightIndividualRatio).forEach(function (key) { return BidenDownStraightIndividualRatio[key] = BidenDownStraightIndividualRatio[key].sort(function (a, b) { return a[0] - b[0]; }); });

@@ -201,9 +201,9 @@ async function scrape() {
             return acc;
         }
         const nonStraightMarginRatio = nonStraight / oppNonStraight;
-        acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraightMargin, `${county}-${nonStraightMarginRatio.toPrecision(3)}x`]);
+        acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraightMargin, nonStraightMarginRatio, county]);
         return acc;
-    }, {} as { [state: string]: [number, number, number, string][] });
+    }, {} as { [state: string]: [number, number, number, number, string][] });
 
     Object.keys(TrumpDownStraightIndividualRatio).forEach((key) => TrumpDownStraightIndividualRatio[key] = TrumpDownStraightIndividualRatio[key].sort((a, b) => a[0] - b[0]));
     const BidenDownStraightIndividualRatio = DemocratRaces.reduce((acc, val) => {
@@ -228,9 +228,9 @@ async function scrape() {
             return acc;
         }
         const nonStraightMarginRatio = nonStraight / oppNonStraight;
-        acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraightMargin, `${county}-${nonStraightMarginRatio.toPrecision(3)}x`]);
+        acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraightMargin, nonStraightMarginRatio, county]);
         return acc;
-    }, {} as { [state: string]: [number, number, number, string][] });
+    }, {} as { [state: string]: [number, number, number, number, string][] });
     Object.keys(BidenDownStraightIndividualRatio).forEach((key) => BidenDownStraightIndividualRatio[key] = BidenDownStraightIndividualRatio[key].sort((a, b) => a[0] - b[0]));
     writeFile("./Outputs/StraightIndividualRatio.json", JSON.stringify({ TrumpDownStraightIndividualRatio, BidenDownStraightIndividualRatio }), "utf-8");
 
