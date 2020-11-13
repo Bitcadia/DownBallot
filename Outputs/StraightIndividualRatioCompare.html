@@ -4,12 +4,13 @@
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 <script src="https://code.highcharts.com/highcharts-more.js"></script>
 <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
+<style>
+</style>
 
 <figure class="highcharts-figure">
     <form action="./StraightIndividualRatioCompare.html">
         <label for="First">Compare (comma separated)</label>
         <input id="First" name="First" type="text" />
-        <input id="Second" name="Second" type="text" />
         <input type="submit" value="Submit">
     </form>
     <div id="container"></div>
@@ -32,40 +33,41 @@
     })(document, window, 'addEventListener', 'removeEventListener', 'DOMContentLoaded', 'load');
     (async () => {
         await document.ready;
+        const urlParams = new URLSearchParams(window.location.search);
+        const first = urlParams.get('First') || "MI,WI,NV,AZ,PA,GA,VA,TX,NM,NC,NH,NV,MI,MA,IA,FL";
+        document.querySelector("#First").value = first;
+        const firstFilter = first.split(",");
         const fetching = await fetch("./StraightIndividualRatio.json");
         const data = JSON.parse(await fetching.text());
-        const urlParams = new URLSearchParams(window.location.search);
-        const first = urlParams.get('First') || "MI";
-        const second = urlParams.get('Second') || "IL,MN,WI";
-        document.querySelector("#First").value = first;
-        document.querySelector("#Second").value = second;
-        const firstFilter = first.split(",");
-        const secondFilter = second.split(",");
-        let node = document.createElement("div");
-        node.id = `State-Trump`;
+        const node = document.createElement("div");
+        node.id = `Compare`;
         document.querySelector("#container").appendChild(node);
         Highcharts.chart(node.id, {
             chart: {
+                height: "75%",
                 type: 'bubble',
                 plotBorderWidth: 1,
                 zoomType: 'xy'
             },
             title: {
-                text: `States: Trump`
+                text: `Compare`
             },
             xAxis: {
                 title: {
                     enabled: true,
-                    text: '% of Party Line Voters'
+                    text: '% Straight Ballot Leans'
                 },
+                min: -100,
+                max: 100,
                 startOnTick: true,
                 endOnTick: true,
                 showLastLabel: true
             },
             yAxis: {
                 title: {
-                    text: '% Delta of Non-Party Line Voters and President'
-                }
+                    text: '% Non-Party Line Voters'
+                },
+                max: 400
             },
             legend: {
                 layout: 'horizontal',
@@ -81,121 +83,33 @@
                 }
             },
             series: [{
-                name: `Trump ${secondFilter.join("-")}`,
-                color: "Pink",
-                regression: true,
-                regressionSettings: {
-                    type: 'linear',
-                    color: "Pink",
-                },
-                data: Object.keys(data.TrumpDownStraightIndividualRatio)
-                    .filter((state) => secondFilter.includes(state))
-                    .reduce((acc, state) => { acc.push(...data.TrumpDownStraightIndividualRatio[state]); return acc }, []).map((val) => {
+                name: "Trump",
+                color: 'rgb(255,0,0)',
+                data: firstFilter.reduce((acc, state) => {
+                    acc.push(...data.TrumpDownStraightIndividualRatio[state].map((val) => {
                         return {
-                            x: val[0],
+                            x: 2 * (val[0] - 50),
                             y: val[1],
                             z: val[2],
-                            name: val[3],
+                            name: `${state}-${val[3]}`,
                         };
-                    })
+                    }));
+                    return acc;
+                }, [])
             }, {
-                name: `Trump ${firstFilter.join("-")}`,
-                color: "Red",
-                regression: true,
-                regressionSettings: {
-                    type: 'linear',
-                    color: "Red",
-                },
-                data: Object.keys(data.TrumpDownStraightIndividualRatio)
-                    .filter((state) => firstFilter.includes(state))
-                    .reduce((acc, state) => { acc.push(...data.TrumpDownStraightIndividualRatio[state]); return acc }, []).map((val) => {
+                name: "Biden",
+                color: 'rgba(0,0,255,0.1)',
+                data: firstFilter.reduce((acc, state) => {
+                    acc.push(...data.BidenDownStraightIndividualRatio[state].map((val) => {
                         return {
-                            x: val[0],
+                            x: -2 * (val[0] - 50),
                             y: val[1],
                             z: val[2],
-                            name: val[3],
+                            name: `${state}-${val[3]}`,
                         };
-                    })
-            }]
-        });
-
-        node = document.createElement("div");
-        node.id = `State-Biden`;
-        document.querySelector("#container").appendChild(node);
-        Highcharts.chart(node.id, {
-            chart: {
-                type: 'bubble',
-                plotBorderWidth: 1,
-                zoomType: 'xy'
-            },
-            title: {
-                text: `States: Biden`
-            },
-            xAxis: {
-                title: {
-                    enabled: true,
-                    text: '% of Party Line Voters'
-                },
-                startOnTick: true,
-                endOnTick: true,
-                showLastLabel: true,
-                max: 100,
-                min: 0
-            },
-            yAxis: {
-                title: {
-                    text: '% of Total votes split ballot'
-                }
-            },
-            legend: {
-                layout: 'horizontal',
-                backgroundColor: Highcharts.defaultOptions.chart.backgroundColor,
-                borderWidth: 1
-            },
-            plotOptions: {
-                series: {
-                    dataLabels: {
-                        enabled: true,
-                        format: '{point.name}'
-                    }
-                }
-            },
-            series: [{
-                name: `Biden ${secondFilter.join("-")}`,
-                color: "#add8e6",
-                regression: true,
-                regressionSettings: {
-                    type: 'linear',
-                    color: "#add8e6",
-                },
-                data: Object.keys(data.BidenDownStraightIndividualRatio)
-                    .filter((state) => secondFilter.includes(state))
-                    .reduce((acc, state) => { acc.push(...data.BidenDownStraightIndividualRatio[state]); return acc }, []).map((val) => {
-                        return {
-                            x: val[0],
-                            y: val[1],
-                            z: val[2],
-                            name: val[3],
-                        }
-                    })
-            }, {
-                name: `Biden ${firstFilter.join("-")}`,
-                color: "Blue",
-                regression: true,
-                regressionSettings: {
-                    type: 'linear',
-                    color: "Blue",
-                },
-                data: Object.keys(data.BidenDownStraightIndividualRatio)
-                    .filter((state) => firstFilter.includes(state))
-                    .reduce((acc, state) => { acc.push(...data.BidenDownStraightIndividualRatio[state]); return acc }, []).map((val) => {
-                        return {
-                            x: val[0],
-                            y: val[1],
-                            z: val[2],
-                            name: val[3],
-                        }
-                    })
+                    }));
+                    return acc;
+                }, [])
             }]
         });
     })()

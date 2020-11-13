@@ -243,7 +243,12 @@ function scrape() {
                     var straightPres = straight;
                     var ratioStraightPres = straightPres / totalStraight;
                     acc[state] = acc[state] || [];
-                    acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraight, county]);
+                    var nonStraightMargin = nonStraight - oppNonStraight;
+                    if (nonStraightMargin < 0) {
+                        return acc;
+                    }
+                    var nonStraightMarginRatio = nonStraight / oppNonStraight;
+                    acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraightMargin, county + "-" + nonStraightMarginRatio.toPrecision(3) + "x"]);
                     return acc;
                 }, {});
                 Object.keys(TrumpDownStraightIndividualRatio).forEach(function (key) { return TrumpDownStraightIndividualRatio[key] = TrumpDownStraightIndividualRatio[key].sort(function (a, b) { return a[0] - b[0]; }); });
@@ -259,7 +264,12 @@ function scrape() {
                     var straightPres = straight;
                     var ratioStraightPres = straightPres / totalStraight;
                     acc[state] = acc[state] || [];
-                    acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraight, county]);
+                    var nonStraightMargin = nonStraight - oppNonStraight;
+                    if (nonStraightMargin < 0) {
+                        return acc;
+                    }
+                    var nonStraightMarginRatio = nonStraight / oppNonStraight;
+                    acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraightMargin, county + "-" + nonStraightMarginRatio.toPrecision(3) + "x"]);
                     return acc;
                 }, {});
                 Object.keys(BidenDownStraightIndividualRatio).forEach(function (key) { return BidenDownStraightIndividualRatio[key] = BidenDownStraightIndividualRatio[key].sort(function (a, b) { return a[0] - b[0]; }); });

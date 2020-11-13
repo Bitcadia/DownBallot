@@ -195,7 +195,13 @@ async function scrape() {
         const straightPres = straight;
         const ratioStraightPres = straightPres / totalStraight;
         acc[state] = acc[state] || [];
-        acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraight, county]);
+        const nonStraightMargin = nonStraight - oppNonStraight;
+        if(nonStraightMargin < 0)
+        {
+            return acc;
+        }
+        const nonStraightMarginRatio = nonStraight / oppNonStraight;
+        acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraightMargin, `${county}-${nonStraightMarginRatio.toPrecision(3)}x`]);
         return acc;
     }, {} as { [state: string]: [number, number, number, string][] });
 
@@ -216,7 +222,13 @@ async function scrape() {
         const straightPres = straight;
         const ratioStraightPres = straightPres / totalStraight;
         acc[state] = acc[state] || [];
-        acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraight, county]);
+        const nonStraightMargin = nonStraight - oppNonStraight;
+        if(nonStraightMargin < 0)
+        {
+            return acc;
+        }
+        const nonStraightMarginRatio = nonStraight / oppNonStraight;
+        acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraightMargin, `${county}-${nonStraightMarginRatio.toPrecision(3)}x`]);
         return acc;
     }, {} as { [state: string]: [number, number, number, string][] });
     Object.keys(BidenDownStraightIndividualRatio).forEach((key) => BidenDownStraightIndividualRatio[key] = BidenDownStraightIndividualRatio[key].sort((a, b) => a[0] - b[0]));
