@@ -36,7 +36,7 @@
     (async () => {
         await document.ready;
         const urlParams = new URLSearchParams(window.location.search);
-        const first = urlParams.get('First') || "AL,AZ,AR,CA,CO,CT,DE,FL,GA,HI,ID,IL,IN,IA,KS,KY,LA,ME,MD,MA,MI,MN,MS,MO,MT,NE,NV,NH,NJ,NM,NY,NC,ND,OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VT,VA,WA,WV,WI,WY";
+        const first = urlParams.get('First') || "WI,MI,NC,GA,PA,OH,MI,IA,AZ,NV,TX,ME,NE,ME,NH,NM,VA,OR,MS,IN,MO,SC";
         const second = urlParams.get('Second') || 2;
         document.querySelector("#First").value = first;
         document.querySelector("#Second").value = second;
@@ -55,12 +55,12 @@
                 zoomType: 'xy'
             },
             title: {
-                text: `Ratio of split ballots`
+                text: `Ratio of Split Ballots (Winning:Losing) > ${secondFilter}`
             },
             xAxis: {
                 title: {
                     enabled: true,
-                    text: '% Straight Ballot Leans'
+                    text: '% Leaning Party Line Ballots'
                 },
                 min: -100,
                 max: 100,
@@ -70,9 +70,8 @@
             },
             yAxis: {
                 title: {
-                    text: '% Non-Party Line Voters'
-                },
-                max: 400
+                    text: 'Total Split Ballots as a % of Party Line Ballots'
+                }
             },
             legend: {
                 layout: 'horizontal',

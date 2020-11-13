@@ -85,10 +85,10 @@
                         color: 'rgb(255,0,0)',
                         data: data.TrumpDownStraightIndividualRatio[state].map((val) => {
                             return {
-                                x: 2*(val[0]-50),
+                                x: 2 * (val[0] - 50),
                                 y: val[1],
                                 z: val[2],
-                                name: val[3],
+                                name: `${state}-${val[4]}-${val[3].toPrecision(3)}x`,
                             };
                         }),
                     }, {
@@ -96,10 +96,10 @@
                         color: 'rgba(0,0,255,0.1)',
                         data: data.BidenDownStraightIndividualRatio[state].map((val) => {
                             return {
-                                x: 2*((val[0]*-1)+50),
+                                x: -2 * (val[0] - 50),
                                 y: val[1],
                                 z: val[2],
-                                name: val[3],
+                                name: `${state}-${val[4]}-${val[3].toPrecision(3)}x`,
                             }
                         }),
                     }]

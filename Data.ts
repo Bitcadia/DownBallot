@@ -205,7 +205,7 @@ async function scrape() {
         return acc;
     }, {} as { [state: string]: [number, number, number, number, string][] });
 
-    Object.keys(TrumpDownStraightIndividualRatio).forEach((key) => TrumpDownStraightIndividualRatio[key] = TrumpDownStraightIndividualRatio[key].sort((a, b) => a[0] - b[0]));
+    Object.keys(TrumpDownStraightIndividualRatio).forEach((key) => TrumpDownStraightIndividualRatio[key] = TrumpDownStraightIndividualRatio[key].filter((val)=>val[0]).sort((a, b) => a[0] - b[0]));
     const BidenDownStraightIndividualRatio = DemocratRaces.reduce((acc, val) => {
         const [state, county] = (val[0] as string).split('-');
         const result = val[1];
@@ -231,7 +231,7 @@ async function scrape() {
         acc[state].push([(ratioStraightPres * 100), ((totalNonStraight/totalStraight) * 100), nonStraightMargin, nonStraightMarginRatio, county]);
         return acc;
     }, {} as { [state: string]: [number, number, number, number, string][] });
-    Object.keys(BidenDownStraightIndividualRatio).forEach((key) => BidenDownStraightIndividualRatio[key] = BidenDownStraightIndividualRatio[key].sort((a, b) => a[0] - b[0]));
+    Object.keys(BidenDownStraightIndividualRatio).forEach((key) => BidenDownStraightIndividualRatio[key] = BidenDownStraightIndividualRatio[key].filter((val)=>val[0]).sort((a, b) => a[0] - b[0]));
     writeFile("./Outputs/StraightIndividualRatio.json", JSON.stringify({ TrumpDownStraightIndividualRatio, BidenDownStraightIndividualRatio }), "utf-8");
 
     const minimumCount = 175000;

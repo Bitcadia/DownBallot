@@ -251,7 +251,7 @@ function scrape() {
                     acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraightMargin, nonStraightMarginRatio, county]);
                     return acc;
                 }, {});
-                Object.keys(TrumpDownStraightIndividualRatio).forEach(function (key) { return TrumpDownStraightIndividualRatio[key] = TrumpDownStraightIndividualRatio[key].sort(function (a, b) { return a[0] - b[0]; }); });
+                Object.keys(TrumpDownStraightIndividualRatio).forEach(function (key) { return TrumpDownStraightIndividualRatio[key] = TrumpDownStraightIndividualRatio[key].filter(function (val) { return val[0]; }).sort(function (a, b) { return a[0] - b[0]; }); });
                 BidenDownStraightIndividualRatio = DemocratRaces.reduce(function (acc, val) {
                     var _a = val[0].split('-'), state = _a[0], county = _a[1];
                     var result = val[1];
@@ -272,7 +272,7 @@ function scrape() {
                     acc[state].push([(ratioStraightPres * 100), ((totalNonStraight / totalStraight) * 100), nonStraightMargin, nonStraightMarginRatio, county]);
                     return acc;
                 }, {});
-                Object.keys(BidenDownStraightIndividualRatio).forEach(function (key) { return BidenDownStraightIndividualRatio[key] = BidenDownStraightIndividualRatio[key].sort(function (a, b) { return a[0] - b[0]; }); });
+                Object.keys(BidenDownStraightIndividualRatio).forEach(function (key) { return BidenDownStraightIndividualRatio[key] = BidenDownStraightIndividualRatio[key].filter(function (val) { return val[0]; }).sort(function (a, b) { return a[0] - b[0]; }); });
                 promises_1.writeFile("./Outputs/StraightIndividualRatio.json", JSON.stringify({ TrumpDownStraightIndividualRatio: TrumpDownStraightIndividualRatio, BidenDownStraightIndividualRatio: BidenDownStraightIndividualRatio }), "utf-8");
                 minimumCount = 175000;
                 demDbDiff = {};

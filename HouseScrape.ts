@@ -530,18 +530,30 @@ const Urls = {
         "https://www.jsonline.com/elections/results/race/2020-11-03-senate-WY-51677/"
     ]
 };
-
+let running = 0;
 async function readOrFetch(url: string, folder: string, split: string) {
+    let promise: Promise<any>;
     try {
-        return await readFile(`${folder}/${url.split(split)[1].slice(0,
-            -1)}`, { encoding: "utf-8" });
+        return await readFile(`${folder}/${url.split(split)[1].slice(0,-1)}`, { encoding: "utf-8" });
     }
     catch {
-        const res = await fetch(url);
+        await new Promise((res) => {
+            const timeout = setInterval(() => {
+                if (!(running>5)) {
+                    clearInterval(timeout)
+                    res();
+                }
+            }, 1000);
+        });
+        promise = fetch(url);
+        running++;
+        const res = await promise;
         if (!res.ok) { // res.status >= 200 && res.status < 300
+            running--;
             throw res.statusText;
-        } 
+        }
         const text = await (await fetch(url)).text();
+        running--;
         await writeFile(`${folder}/${url.split(split)[1].slice(0, -1)}`, text, "utf-8");
         return text;
     }
@@ -562,14 +574,14 @@ export const HouseResults = (async () => {
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
-                const vote = Number.parseInt(val.text.replace(/,/g,""));
+                const vote = Number.parseInt(val.text.replace(/,/g, ""));
                 return isNaN(vote) ? 0 : vote;
             })
         );
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
             const votes = takeWhile(restVotes, (val) => val[0] !== "Candidate");
-            county = county.replace(/\W/g,"").toLowerCase();
+            county = county.replace(/\W/g, "").toLowerCase();
             acc[`${state}-${county}`] = (acc[`${state}-${county}`] || []).concat(votes);
             countyVotes = restVotes.slice(votes.length);
             return acc;
@@ -594,14 +606,14 @@ export const GovResults = (async () => {
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
-                const vote = Number.parseInt(val.text.replace(/,/g,""));
+                const vote = Number.parseInt(val.text.replace(/,/g, ""));
                 return isNaN(vote) ? 0 : vote;
             })
         );
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
             const votes = takeWhile(restVotes, (val) => val[0] !== "Candidate");
-            county = county.replace(/\W/g,"").toLowerCase();
+            county = county.replace(/\W/g, "").toLowerCase();
             acc[`${state}-${county}`] = (acc[`${state}-${county}`] || []).concat(votes);
             countyVotes = restVotes.slice(votes.length);
             return acc;
@@ -626,14 +638,14 @@ export const PresResults = (async () => {
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
-                const vote = Number.parseInt(val.text.replace(/,/g,""));
+                const vote = Number.parseInt(val.text.replace(/,/g, ""));
                 return isNaN(vote) ? 0 : vote;
             })
         );
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
             const votes = takeWhile(restVotes, (val) => val[0] !== "Candidate");
-            county = county.replace(/\W/g,"").toLowerCase();
+            county = county.replace(/\W/g, "").toLowerCase();
             acc[`${state}-${county}`] = (acc[`${state}-${county}`] || []).concat(votes);
             countyVotes = restVotes.slice(votes.length);
             return acc;
@@ -658,14 +670,14 @@ export const SenResults = (async () => {
         let countyVotes = zip(
             root.querySelectorAll(".result-county-table-col-candidate").map((val) => val.text.split(" ").filter((val) => val !== '*').slice(-1)[0]),
             root.querySelectorAll(".result-county-table-col-votes").map((val) => {
-                const vote = Number.parseInt(val.text.replace(/,/g,""));
+                const vote = Number.parseInt(val.text.replace(/,/g, ""));
                 return isNaN(vote) ? 0 : vote;
             })
         );
         return [...counties].reduce((acc, county) => {
             let [, ...restVotes] = countyVotes;
             const votes = takeWhile(restVotes, (val) => val[0] !== "Candidate");
-            county = county.replace(/\W/g,"").toLowerCase();
+            county = county.replace(/\W/g, "").toLowerCase();
             acc[`${state}-${county}`] = (acc[`${state}-${county}`] || []).concat(votes);
             countyVotes = restVotes.slice(votes.length);
             return acc;

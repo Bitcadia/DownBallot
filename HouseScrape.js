@@ -575,32 +575,47 @@ var Urls = {
         "https://www.jsonline.com/elections/results/race/2020-11-03-senate-WY-51677/"
     ]
 };
+var running = 0;
 function readOrFetch(url, folder, split) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, res, text;
+        var promise, _a, res, text;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 2, , 7]);
+                    _b.trys.push([0, 2, , 8]);
                     return [4 /*yield*/, promises_1.readFile(folder + "/" + url.split(split)[1].slice(0, -1), { encoding: "utf-8" })];
                 case 1: return [2 /*return*/, _b.sent()];
                 case 2:
                     _a = _b.sent();
-                    return [4 /*yield*/, node_fetch_1["default"](url)];
+                    return [4 /*yield*/, new Promise(function (res) {
+                            var timeout = setInterval(function () {
+                                if (!(running > 5)) {
+                                    clearInterval(timeout);
+                                    res();
+                                }
+                            }, 1000);
+                        })];
                 case 3:
+                    _b.sent();
+                    promise = node_fetch_1["default"](url);
+                    running++;
+                    return [4 /*yield*/, promise];
+                case 4:
                     res = _b.sent();
                     if (!res.ok) { // res.status >= 200 && res.status < 300
+                        running--;
                         throw res.statusText;
                     }
                     return [4 /*yield*/, node_fetch_1["default"](url)];
-                case 4: return [4 /*yield*/, (_b.sent()).text()];
-                case 5:
-                    text = _b.sent();
-                    return [4 /*yield*/, promises_1.writeFile(folder + "/" + url.split(split)[1].slice(0, -1), text, "utf-8")];
+                case 5: return [4 /*yield*/, (_b.sent()).text()];
                 case 6:
+                    text = _b.sent();
+                    running--;
+                    return [4 /*yield*/, promises_1.writeFile(folder + "/" + url.split(split)[1].slice(0, -1), text, "utf-8")];
+                case 7:
                     _b.sent();
                     return [2 /*return*/, text];
-                case 7: return [2 /*return*/];
+                case 8: return [2 /*return*/];
             }
         });
     });
