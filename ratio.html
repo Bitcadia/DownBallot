@@ -38,12 +38,13 @@
         const fetching = await fetch("./Outputs/StraightIndividualRatio.json");
         const data = JSON.parse(await fetching.text());
         Object.keys(data).forEach((key) => {
-            Object.keys(data[key]).filter((state)=>firstFilter.includes(state)).forEach((state) => {
+            Object.keys(data[key]).filter((state) => firstFilter.includes(state)).forEach((state) => {
                 const node = document.createElement("div");
                 node.id = `State-${state}`;
                 document.querySelector("#container").appendChild(node);
                 Highcharts.chart(node.id, {
                     chart: {
+                        height: "50%",
                         type: 'bubble',
                         plotBorderWidth: 1,
                         zoomType: 'xy'
@@ -64,7 +65,7 @@
                     },
                     yAxis: {
                         title: {
-                            text: '% Non-Party Line Voters'
+                            text: 'Split Ballots Ratio Won by each candidate'
                         }
                     },
                     legend: {
@@ -80,15 +81,31 @@
                             }
                         }
                     },
+                    tooltip: {
+                        formatter: function () {
+                            return `The county <b>${this.point.name.split('-').slice(0, 2).join('-')}</b> had:
+                            <ul>
+                                <br/>
+                                <li>Straight party ballots votes lean <b>%${Math.abs(this.point.x.toString().slice(0, 4))}</b> in favor of <b>${(this.point.x > 0 ? "Trump" : "Biden")}</b></li>
+                                <br/>
+                                <li>A <b>${this.point.name.split('-').slice(2).join('-')}</b> ratio of split ballots to straight ballots</li>
+                                <br/>
+                                <li>That split for ${this.point.series.name} in a <b>${this.y.toString().slice(0, 4)} to 1</b> ratio</li>
+                                <br/>
+                                <li>Wich was a net difference of <b>${this.point.z}</b> split ballots</li>
+                                <br/>
+                            </ul>`;
+                        }
+                    },
                     series: [{
                         name: "Trump",
                         color: 'rgb(255,0,0)',
                         data: data.TrumpDownStraightIndividualRatio[state].map((val) => {
                             return {
                                 x: 2 * (val[0] - 50),
-                                y: val[1],
+                                y: val[3],
                                 z: val[2],
-                                name: `${state}-${val[4]}-${val[3].toPrecision(3)}x`,
+                                name: `${state}-${val[4]}-${val[1].toString().slice(0, 4)}%`,
                             };
                         }),
                     }, {
@@ -97,9 +114,9 @@
                         data: data.BidenDownStraightIndividualRatio[state].map((val) => {
                             return {
                                 x: -2 * (val[0] - 50),
-                                y: val[1],
+                                y: val[3],
                                 z: val[2],
-                                name: `${state}-${val[4]}-${val[3].toPrecision(3)}x`,
+                                name: `${state}-${val[4]}-${val[1].toString().slice(0, 4)}%`,
                             }
                         }),
                     }]

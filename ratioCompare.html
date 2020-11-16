@@ -8,7 +8,7 @@
 </style>
 
 <figure class="highcharts-figure">
-    <form action="./StraightIndividualRatioCompare.html">
+    <form action="./ratioCompare.html">
         <label for="First">Compare (comma separated)</label>
         <input id="First" name="First" type="text" />
         <label for="Second">Filter By Split Ballot Ratio</label>
@@ -47,7 +47,7 @@
         const firstFilter = first.split(",");
         const secondFilter = parseFloat(second.toString());
         const thirdFilter = parseFloat(third.toString());
-        const fetching = await fetch("./StraightIndividualRatio.json");
+        const fetching = await fetch("./Outputs/StraightIndividualRatio.json");
         const data = JSON.parse(await fetching.text());
         const node = document.createElement("div");
         node.id = `Compare`;
@@ -88,11 +88,11 @@
                     return `The county <b>${this.point.name.split('-').slice(0,2).join('-')}</b> had:
                     <ul>
                         <br/>
-                        <li>Straight party ballots votes lean <b>%${Math.abs(this.point.x.toPrecision(3))}</b> in favor of <b>${(this.point.x > 0 ? "Trump" : "Biden")}</b></li>
+                        <li>Straight party ballots votes lean <b>%${Math.abs(this.point.x.toString().slice(0,4))}</b> in favor of <b>${(this.point.x > 0 ? "Trump" : "Biden")}</b></li>
                         <br/>
                         <li>A <b>${this.point.name.split('-').slice(2).join('-')}</b> ratio of split ballots to straight ballots</li>
                         <br/>
-                        <li>That split for ${this.point.series.name} in a <b>${this.y.toPrecision(3)} to 1</b> ratio</li>
+                        <li>That split for ${this.point.series.name} in a <b>${this.y.toString().slice(0,4)} to 1</b> ratio</li>
                         <br/>
                         <li>Wich was a net difference of <b>${ this.point.z }</b> split ballots</li>
                         <br/>
@@ -116,7 +116,7 @@
                             x: 2 * (val[0] - 50),
                             y: val[3],
                             z: val[2],
-                            name: `${state}-${val[4]}-${val[1].toPrecision(1)}%`,
+                            name: `${state}-${val[4]}-${val[1].toString().slice(0,4)}%`,
                         };
                     }));
                     return acc;
@@ -130,7 +130,7 @@
                             x: -2 * (val[0] - 50),
                             y: val[3],
                             z: val[2],
-                            name: `${state}-${val[4]}-${val[1].toPrecision(1)}%`,
+                            name: `${state}-${val[4]}-${val[1].toString().slice(0,4)}%`,
                         };
                     }));
                     return acc;

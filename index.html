@@ -34,6 +34,7 @@
                 document.querySelector("#container").appendChild(node);
                 Highcharts.chart(node.id, {
                     chart: {
+                        height: "50%",
                         type: 'scatter',
                         zoomType: 'xy'
                     },
@@ -77,6 +78,18 @@
                                     }
                                 }
                             },
+                        }
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            return this.point.name && `The county <b>${this.point.name.split('-').slice(0, 2).join('-')}</b>:
+                            </br>
+                            <ul>
+                                <li>Straight party ballots voted <b>%${this.point.x.toPrecision(3)}</b> in favor of <b>${this.series.userOptions.color == "Blue" ? "Biden" : "Trump"}</b></li>
+                                <br/>
+                                <li>Split party ballots voted <b>%${Math.abs(this.point.y.toPrecision(3))}</b> ${this.point.y > 0 ? "more" : "less"} (%${Math.abs((this.point.y+this.point.x).toPrecision(3))}) in favor of <b>${this.series.userOptions.color == "Blue" ? "Biden" : "Trump"}</b></li>
+                                <br/>
+                            </ul>`;
                         }
                     },
                     series: [{

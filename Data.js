@@ -95,8 +95,8 @@ function scrape() {
                     var _a, _b, _c, _d, _e, _f;
                     var votes = pres[county];
                     var _g = votes.sort(function (a, b) { return b[1] - a[1]; }), winning = _g[0], second = _g[1];
-                    var winHouResults = (_a = hou[county]) === null || _a === void 0 ? void 0 : _a.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
-                    var secondHouResults = (_b = hou[county]) === null || _b === void 0 ? void 0 : _b.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
+                    var winHouResults = (_a = hou[county]) === null || _a === void 0 ? void 0 : _a.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return val[1] + acc; }, 0);
+                    var secondHouResults = (_b = hou[county]) === null || _b === void 0 ? void 0 : _b.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return val[1] + acc; }, 0);
                     var winGovResults = (_c = gov[county]) === null || _c === void 0 ? void 0 : _c.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
                     var secondGovResults = (_d = gov[county]) === null || _d === void 0 ? void 0 : _d.filter(function (val) { return val[0] === second[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);
                     var winSenResults = (_e = sen[county]) === null || _e === void 0 ? void 0 : _e.filter(function (val) { return val[0] === winning[0]; }).reduce(function (acc, val) { return Math.max(val[1], acc); }, 0);

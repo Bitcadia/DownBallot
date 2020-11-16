@@ -20,8 +20,8 @@ async function scrape() {
     const ResultCountyMap = Object.keys(pres).reduce((counties, county) => {
         const votes = pres[county];
         const [winning, second] = votes.sort((a, b) => b[1] - a[1]);
-        const winHouResults = hou[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
-        const secondHouResults = hou[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
+        const winHouResults = hou[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => val[1]+acc, 0);
+        const secondHouResults = hou[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => val[1]+acc, 0);
         const winGovResults = gov[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
         const secondGovResults = gov[county]?.filter(val => val[0] === second[0]).reduce((acc, val) => Math.max(val[1], acc), 0);
         const winSenResults = sen[county]?.filter(val => val[0] === winning[0]).reduce((acc, val) => Math.max(val[1], acc), 0);

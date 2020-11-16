@@ -5,7 +5,7 @@
 <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
 
 <figure class="highcharts-figure">
-    <form action="./CountyDownBallotDiffsByStraightCompare.html">
+    <form action="./compare.html">
         <label for="First">Compare (comma separated)</label>
         <input id="First" name="First" type="text" />
         <input id="Second" name="Second" type="text" />
@@ -31,7 +31,7 @@
     })(document, window, 'addEventListener', 'removeEventListener', 'DOMContentLoaded', 'load');
     (async () => {
         await document.ready;
-        const fetching = await fetch("./CountyDownBallotDiffsByStraight.json");
+        const fetching = await fetch("./Outputs/CountyDownBallotDiffsByStraight.json");
         const data = JSON.parse(await fetching.text());
         const urlParams = new URLSearchParams(window.location.search);
         const first = urlParams.get('First') || "MI";
