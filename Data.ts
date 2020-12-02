@@ -2,19 +2,21 @@ import { StateECMap } from './ECMap';
 import { GovResults, HouseResults, PresResults, SenResults } from './HouseScrape';
 import { populationMap } from './PopulationMap';
 import { readFile, writeFile } from 'fs/promises';
+import { Results } from './GAScrape';
 async function scrape() {
     try {
         return await Promise.all([
-            GovResults(),
-            SenResults(),
-            PresResults(),
-            HouseResults()
+            Results()
         ]);
     } catch (e) {
         await new Promise((res) => { setTimeout(res, 1000) });
         return await scrape();
     }
 }
+(async ()=>{
+    const [GA] = await scrape();
+    writeFile("./Outputs/GAPrecincts.json", JSON.stringify(GA), "utf-8");
+})();
 (async () => {
     const [gov, sen, pres, hou] = await scrape();
     const ResultCountyMap = Object.keys(pres).reduce((counties, county) => {
@@ -307,4 +309,4 @@ async function scrape() {
     }));
 
     writeFile("./Outputs/LargestNoDownBallotCounties.json", JSON.stringify(largestNoDownBallotCounties), "utf-8");
-})().then();
+})();

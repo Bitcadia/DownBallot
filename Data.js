@@ -55,9 +55,9 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 };
 exports.__esModule = true;
 var ECMap_1 = require("./ECMap");
-var HouseScrape_1 = require("./HouseScrape");
 var PopulationMap_1 = require("./PopulationMap");
 var promises_1 = require("fs/promises");
+var GAScrape_1 = require("./GAScrape");
 function scrape() {
     return __awaiter(this, void 0, void 0, function () {
         var e_1;
@@ -66,10 +66,7 @@ function scrape() {
                 case 0:
                     _a.trys.push([0, 2, , 5]);
                     return [4 /*yield*/, Promise.all([
-                            HouseScrape_1.GovResults(),
-                            HouseScrape_1.SenResults(),
-                            HouseScrape_1.PresResults(),
-                            HouseScrape_1.HouseResults()
+                            GAScrape_1.Results()
                         ])];
                 case 1: return [2 /*return*/, _a.sent()];
                 case 2:
@@ -84,6 +81,18 @@ function scrape() {
         });
     });
 }
+(function () { return __awaiter(void 0, void 0, void 0, function () {
+    var GA;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, scrape()];
+            case 1:
+                GA = (_a.sent())[0];
+                promises_1.writeFile("./Outputs/GAPrecincts.json", JSON.stringify(GA), "utf-8");
+                return [2 /*return*/];
+        }
+    });
+}); })();
 (function () { return __awaiter(void 0, void 0, void 0, function () {
     var _a, gov, sen, pres, hou, ResultCountyMap, stateTotals, ECAndPopularResultsWeightedByCounty, closeStates, DemocratRaces, DemRaceDiff, RepublicanRaces, RepRaceDiff, TrumpDownBallotVsStraight, BidenDownBallotVsStraight, TrumpDownStraightIndividualRatio, BidenDownStraightIndividualRatio, minimumCount, demDbDiff, repDbDiff, largestNoDownBallotCounties;
     return __generator(this, function (_b) {
@@ -340,4 +349,4 @@ function scrape() {
                 return [2 /*return*/];
         }
     });
-}); })().then();
+}); });
