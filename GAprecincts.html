@@ -1,0 +1,109 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://momentjs.com/static/js/global.js"></script>
+<script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
+
+<figure class="highcharts-figure">
+    <form action="./GAprecincts.html">
+        <label for="First">Compare (comma separated)</label>
+        <input id="First" name="First" type="text" />
+        <input type="submit" value="Submit">
+    </form>
+    <div id="container"></div>
+</figure>
+<script>
+    (function (doc, win, add, remove, loaded, load) {
+        doc.ready = new Promise(function (resolve) {
+            if (doc.readyState === 'complete') {
+                resolve();
+            } else {
+                function onReady() {
+                    resolve();
+                    doc[remove](loaded, onReady, true);
+                    win[remove](load, onReady, true);
+                }
+                doc[add](loaded, onReady, true);
+                win[add](load, onReady, true);
+            }
+        });
+    })(document, window, 'addEventListener', 'removeEventListener', 'DOMContentLoaded', 'load');
+    (async () => {
+        await document.ready;
+        const fetching = await fetch("./Outputs/GAPrecincts.json");
+        const data = JSON.parse(await fetching.text());
+        const urlParams = new URLSearchParams(window.location.search);
+        const first = urlParams.get('First') || "Fulton";
+        document.querySelector("#First").value = first;
+        const firstFilter = first.split(",").filter((val) => val);
+        let node = document.createElement("div");
+        node.id = `State-Trump`;
+        document.querySelector("#container").appendChild(node);
+        Highcharts.chart(node.id, {
+            chart: {
+                height: "75%",
+                type: 'bubble',
+                plotBorderWidth: 1,
+                zoomType: 'xy'
+            },
+            title: {
+                text: `${firstFilter.join("/")} Precincts`
+            },
+            xAxis: {
+                type: 'datetime',
+                title: {
+                    enabled: true,
+                    text: 'Time of Reporting'
+                },
+            },
+            time: {
+                timezone: 'America/New_York'
+            },
+            yAxis: {
+                title: {
+                    text: 'Vote Total'
+                }
+            },
+            legend: {
+                layout: 'horizontal',
+                backgroundColor: Highcharts.defaultOptions.chart.backgroundColor,
+                borderWidth: 1
+            },
+            tooltip: {
+                formatter: function () {
+                    return this.point.name && `The precinct <b>${this.point.name}</b>:
+                        </br>
+                        <ul>
+                            <li>Reported <b>${this.point.z}</b> Votes</li>
+                            <br/>
+                            <li>At ${moment(this.point.x).tz("America/New_York").format('MMMM Do YYYY, HH:mm')}</li>
+                            <br/>
+                            <li>for a total of ${this.point.y}</li>
+                        </ul>`;
+                }
+            },
+            series: Object.keys(data).filter((val) => !(firstFilter.length) || firstFilter.includes(val.split("-")[0])).map((key) => {
+                const [max] = (data[key]).slice(-1);
+                return {
+                    name: `Precinct: ${key}`,
+                    data: (data[key])
+                        .filter((val) => {
+                            return moment(val.timeStamp).isBefore("Nov 4 2020 8:00") && val.total > 500;
+                        })
+                        .map((val) => {
+                            return {
+                                x: new Date(val.timeStamp),
+                                y: val.total,
+                                z: val.delta,
+                                name: val.precinct
+                            }
+                        })
+                }
+            })
+        });
+
+    })()
+
+</script>
